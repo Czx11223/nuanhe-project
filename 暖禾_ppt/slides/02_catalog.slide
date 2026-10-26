@@ -1,0 +1,44 @@
+<Slide style={{ width: '1280px', height: '720px', background: '#FBF7F1', padding: '20px 64px' }}>
+  <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 16, height: 100, borderBottom: '2px solid #E4D8C8' }}>
+    <Box style={{ width: 6, height: 48, background: '#B07A4F', borderRadius: 3 }} />
+    <Box>
+      <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#2A211A' }}>内容导航</Text>
+      <Text style={{ fontSize: 18, color: '#8A7B6B', marginTop: 4 }}>本次汇报的五个部分</Text>
+    </Box>
+    <Text style={{ marginLeft: 'auto', fontSize: 16, color: '#B0A18F', letterSpacing: 2 }}>CONTENTS · A—E</Text>
+  </Box>
+
+  <Box style={{ flexDirection: 'row', gap: 40, marginTop: 26, height: 516 }}>
+    <Box style={{ width: '30%', background: 'linear-gradient(160deg, #2A211A, #4A3A2C)', borderRadius: 16, padding: 36, justifyContent: 'center' }}>
+      <Text style={{ fontSize: 64, fontWeight: 'bold', color: '#FFFFFF' }}>05</Text>
+      <Text style={{ fontSize: 20, color: '#C9B6A2', marginTop: 8 }}>个核心板块</Text>
+      <Box style={{ width: 56, height: 5, background: '#C76B3A', borderRadius: 3, marginTop: 18 }} />
+      <Text style={{ fontSize: 15, color: '#A89584', marginTop: 18, lineHeight: 1.6 }}>按"背景 → 目的 → 过程 → 效果 → 心得"顺序展开</Text>
+    </Box>
+
+    <Box style={{ flex: 1, flexDirection: 'column', gap: 13, justifyContent: 'center' }}>
+      {[
+        { k: 'a', t: '项目背景', d: '为何启动：品牌线上化诉求与旧方式痛点' },
+        { k: 'b', t: '开发目的', d: '三位一体官网的目标定位与价值' },
+        { k: 'c', t: 'WorkBuddy 需求处理截图', d: '需求沟通 / 任务拆解 / 代码生成（自备图）' },
+        { k: 'd', t: '项目效果截图', d: '前台首页 / 后台管理 / 接口联调（自备图）' },
+        { k: 'e', t: '项目心得', d: '从真实交付链路中沉淀的全栈经验' },
+      ].map((it, i) => (
+        <Box key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 18, background: '#FFFFFF', borderLeft: '4px solid #B07A4F', borderRadius: 12, padding: '14px 20px', boxShadow: '0 2px 10px rgba(42,33,26,0.05)' }}>
+          <Box style={{ width: 46, height: 46, borderRadius: 12, background: '#2A211A', justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF' }}>{it.k.toUpperCase()}</Text>
+          </Box>
+          <Box>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#2A211A' }}>{it.t}</Text>
+            <Text style={{ fontSize: 15, color: '#8A7B6B', marginTop: 2 }}>{it.d}</Text>
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  </Box>
+
+  <Box style={{ position: 'absolute', bottom: 20, left: 64, right: 64, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#9A8B79' }}>暖禾家具 · 项目成果展示</Text>
+    <Text style={{ fontSize: 14, color: '#9A8B79' }}>02 / 08</Text>
+  </Box>
+</Slide>

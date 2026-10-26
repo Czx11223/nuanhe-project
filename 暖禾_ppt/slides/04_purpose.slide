@@ -1,0 +1,47 @@
+<Slide style={{ width: '1280px', height: '720px', background: '#FBF7F1', padding: '20px 64px' }}>
+  <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 16, height: 100, borderBottom: '2px solid #E4D8C8' }}>
+    <Box style={{ width: 6, height: 48, background: '#B07A4F', borderRadius: 3 }} />
+    <Box>
+      <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#2A211A' }}>b）开发目的</Text>
+      <Text style={{ fontSize: 18, color: '#8A7B6B', marginTop: 4 }}>四位一体的目标定位</Text>
+    </Box>
+    <Text style={{ marginLeft: 'auto', fontSize: 16, color: '#B0A18F', letterSpacing: 2 }}>OBJECTIVES</Text>
+  </Box>
+
+  <Box style={{ flexDirection: 'row', gap: 40, marginTop: 22, height: 518 }}>
+    <Box style={{ width: '30%', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
+      <Box style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(160deg, #2A211A, #4A3A2C)', justifyContent: 'center', alignItems: 'center' }}>
+        <FAIcon name='bullseye' style={{ fill: '#C76B3A', width: 34, height: 34 }} />
+      </Box>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#2A211A', lineHeight: 1.4 }}>把"展示 + 运营 + 工程能力"一次讲清</Text>
+      <Text style={{ fontSize: 18, color: '#5A4F45', lineHeight: 1.7 }}>
+        不堆技术细节，而是用真实可运行的交付物，证明从需求到上线全链路的落地能力，为课程答辩与作品集提供硬证据。
+      </Text>
+      <Box style={{ width: 56, height: 5, background: '#C76B3A', borderRadius: 3 }} />
+    </Box>
+
+    <Box style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 20, alignContent: 'center' }}>
+      {[
+        { ic: 'sitemap', t: '三位一体官网', d: '前台展示 + 后台管理 + 后端服务，单仓库三目录解耦，职责清晰可独立部署' },
+        { ic: 'chart-line', t: '提升品牌获客', d: '统一品牌形象窗口，沉淀留言/预约/简历投递线索，支撑招聘与品牌展示' },
+        { ic: 'code', t: '全栈能力验证', d: 'React + Tailwind / AntD5 前端，FastAPI + SQLite 后端，RBAC 与 JWT 鉴权落地' },
+        { ic: 'rocket', t: '可一键部署底座', d: '标准化启动脚本与 Nginx 反代建议，Swagger 自动文档，工程可复用到新项目' },
+      ].map((it, i) => (
+        <Box key={i} style={{ width: 'calc(50% - 10px)', background: '#FFFFFF', borderRadius: 14, padding: '20px 22px', borderTop: '4px solid #B07A4F', boxShadow: '0 2px 12px rgba(42,33,26,0.06)' }}>
+          <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 10 }}>
+            <Box style={{ width: 46, height: 46, borderRadius: 12, background: '#F2E9DC', justifyContent: 'center', alignItems: 'center' }}>
+              <FAIcon name={it.ic} style={{ fill: '#B07A4F', width: 26, height: 26 }} />
+            </Box>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#2A211A' }}>{it.t}</Text>
+          </Box>
+          <Text style={{ fontSize: 16, color: '#5A4F45', lineHeight: 1.6 }}>{it.d}</Text>
+        </Box>
+      ))}
+    </Box>
+  </Box>
+
+  <Box style={{ position: 'absolute', bottom: 20, left: 64, right: 64, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#9A8B79' }}>暖禾家具 · 项目成果展示</Text>
+    <Text style={{ fontSize: 14, color: '#9A8B79' }}>04 / 08</Text>
+  </Box>
+</Slide>

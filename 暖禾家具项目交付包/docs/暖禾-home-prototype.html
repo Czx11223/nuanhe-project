@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暖禾家具 · 企业官网原型</title>
+<style>
+:root{
+  --primary:#007AFF;
+  --primary-hover:#0066D6;
+  --primary-active:#0055B3;
+  --primary-light:#E6F1FB;
+  --primary-lighter:#F0F7FF;
+  --bg-page:#F5F5F7;
+  --bg-card:#FFFFFF;
+  --bg-hover:#F5F5F7;
+  --bg-active:#EBEBED;
+  --text-primary:#1D1D1F;
+  --text-secondary:#6E6E73;
+  --text-tertiary:#AEAEB2;
+  --border:#E5E5EA;
+  --border-hover:#D1D1D6;
+  --success:#34C759;
+  --radius-sm:6px;
+  --radius-md:8px;
+  --radius-lg: 12px;
+  --radius-full:9999px;
+  --font-sans:'PingFang SC','SF Pro Text',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-sans);background:var(--bg-page);color:var(--text-primary);font-size:14px;line-height:1.5;}
+a{color:inherit;text-decoration:none;}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px;}
+
+/* ===== 顶部导航 ===== */
+.nav{background:var(--bg-card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.nav-inner{display:flex;align-items:center;height:56px;max-width:1200px;margin:0 auto;padding:0 24px;}
+.logo{font-size:20px;font-weight:600;color:var(--text-primary);letter-spacing:-0.02em;margin-right:32px;display:flex;align-items:center;gap:8px;}
+.logo .mark{width:28px;height:28px;border-radius:var(--radius-md);background:var(--primary);display:inline-flex;align-items:center;justify-content:center;color:#fff;}
+.menu{display:flex;align-items:center;gap:4px;flex:1;}
+.menu-item{position:relative;}
+.menu-link{display:flex;align-items:center;gap:4px;padding:8px 14px;border-radius:var(--radius-md);font-size:16px;font-weight:400;color:var(--text-primary);cursor:pointer;transition:background .2s ease;}
+.menu-link:hover{background:var(--bg-hover);}
+.menu-item.active .menu-link{color:var(--primary);}
+.arrow{width:14px;height:14px;}
+.dropdown{position:absolute;top:100%;left:0;min-width:180px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:8px;margin-top:8px;display:none;}
+.menu-item:hover .dropdown{display:block;}
+.dropdown a{display:block;padding:10px 12px;border-radius:var(--radius-md);font-size:14px;color:var(--text-primary);}
+.dropdown a:hover{background:var(--bg-hover);color:var(--primary);}
+.nav-cta{display:flex;align-items:center;gap:12px;}
+.btn{font-size:14px;font-weight:600;border-radius:var(--radius-md);padding:8px 16px;cursor:pointer;border:1px solid transparent;transition:all .2s ease;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-hover);}
+.btn-ghost{background:transparent;color:var(--primary);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--primary-lighter);}
+
+/* ===== Hero ===== */
+.hero{padding:48px 0;background:var(--bg-card);border-bottom:1px solid var(--border);}
+.hero h1{font-size:28px;font-weight:600;letter-spacing:-0.02em;margin-bottom:12px;}
+.hero p{font-size:16px;color:var(--text-secondary);max-width:560px;}
+.hero-metrics{display:flex;gap:48px;margin-top:32px;}
+.metric .num{font-size:28px;font-weight:600;color:var(--primary);}
+.metric .label{font-size:12px;color:var(--text-tertiary);}
+
+/* ===== Section ===== */
+.section{padding:48px 0;}
+.section h2{font-size:20px;font-weight:600;margin-bottom:24px;}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(4,1fr);}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;}
+.card .ic{width:40px;height:40px;border-radius:var(--radius-md);background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--primary);}
+.card h3{font-size:16px;font-weight:600;margin-bottom:8px;}
+.card p{font-size:14px;color:var(--text-secondary);}
+
+/* 产品预览 */
+.prod-grid{display:grid;gap:16px;grid-template-columns:repeat(4,1fr);}
+.prod{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+.prod .thumb{height:160px;background:var(--primary-lighter);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);}
+.prod .body{padding:16px;}
+.prod .name{font-size:16px;font-weight:600;}
+.prod .meta{font-size:12px;color:var(--text-tertiary);margin-top:4px;}
+
+/* 新闻预览 */
+.news-grid{display:grid;gap:16px;grid-template-columns:repeat(3,1fr);}
+.news{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;}
+.news .tag{display:inline-block;font-size:12px;color:var(--primary);background:var(--primary-light);border-radius:var(--radius-sm);padding:2px 8px;margin-bottom:8px;}
+.news h3{font-size:16px;font-weight:600;margin-bottom:8px;}
+.news .date{font-size: 12px;color:var(--text-tertiary);}
+
+/* 入口大卡片 */
+.entry-grid{display:grid;gap:16px;grid-template-columns:1fr 1fr;}
+.entry{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;display:flex;justify-content:space-between;align-items:center;}
+.entry h3{font-size:20px;font-weight:600;}
+.entry p{font-size:14px;color:var(--text-secondary);margin-top:8px;}
+.entry .btn{margin-top:16px;}
+.entry .glyph{width:64px;height:64px;border-radius:var(--radius-lg);background:var(--primary-light);display:flex;align-items:center;justify-content:center;color:var(--primary);}
+
+/* 页脚 */
+footer{background:var(--bg-card);border-top: 1px solid var(--border);padding:32px 0;margin-top:48px;}
+footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;}
+footer .col h4{font-size:14px;font-weight:600;margin-bottom:12px;}
+footer .col p{font-size:12px;color:var(--text-secondary);line-height:1.8;}
+footer .copy{font-size:12px;color:var(--text-tertiary);margin-top:24px;}
+
+@media (max-width:1024px){.grid,.prod-grid{grid-template-columns:repeat(2,1fr);}.news-grid{grid-template-columns:1fr;}.entry-grid{grid-template-columns:1fr;}}
+@media (max-width:768px){.menu{display:none;}.hero-metrics{flex-wrap:wrap;gap:24px;}.grid,.prod-grid,gap{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- 顶部导航：严格按 PRD 第 41 行 / 第 197-217 行 -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="logo"><span class="mark">L</span>暖禾家具</div>
+    <div class="menu">
+      <div class="menu-item active"><a class="menu-link" href="/">首页</a></div>
+      <div class="menu-item">
+        <a class="menu-link" href="/products">产品 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"></path></svg></a>
+        <div class="dropdown">
+          <a href="/products">产品中心</a>
+          <a href="/cases">新案例展示</a>
+        </div>
+      </div>
+      <div class="menu-item">
+        <a class="menu-link" href="/news">新闻 <svg class="arrow" viewBox=" 0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"></path></svg></a>
+        <div class="dropdown">
+          <a href="/news?cat=企业新闻">企业新闻</a>
+          <a href="/news?cat=行业资讯">行业资讯</a>
+        </div>
+      </div>
+      <div class="menu-item">
+        <a class="menu-link" href="/recruitment">招聘入口 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"></path></svg></a>
+        <div class="dropdown">
+          <a href="/recruitment?type=社会招聘">社会招聘</a>
+          <a href="/recruitment?type=校园招聘">校园招聘</a>
+        </div>
+      </div>
+      <div class="menu-item">
+        <a class="menu-link" href="/about/暖禾">关于我们 <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"></path></svg></a>
+        <div class="dropdown">
+          <a href="/about/暖禾">关于暖禾</a>
+          <a href="/about/history">发展历程</a>
+          <a href="/about/brand">品牌介绍</a>
+          <a href="/about/contact">联系我们</a>
+        </div>
+      </div>
+    </div>
+    <div class="nav-cta">
+      <button class="btn btn-ghost">登录</button>
+      <button class="btn btn-primary">预约设计</button>
+    </div>
+  </div>
+</nav>
+
+<!-- 首页 Hero -->
+<section class="hero">
+  <div class="wrap">
+    <h1>暖禾家具 · 让家更有温度</h1>
+    <p>集研发、制造、销售于一体的家居企业。以人体工程学与原创设计，为每一个家庭打造舒适空间。</p>
+    <div class="hero-metrics">
+      <div class="metric"><div class="num">1953</div><div class="label">品牌创立年份</div></div>
+      <div class="metric"><div class="num">12</div><div class="label">智能产线</div></div>
+      <div class="metric"><div class="num">300+</div><div class="label">荣誉资质</div></div>
+      <div class="metric"><div class="num">120</div><div class="label">城市门店</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 工艺亮点（对应「品牌介绍」派生） -->
+<section class="section">
+  <div class="wrap">
+    <h2>核心工艺亮点</h2>
+    <div class="grid">
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div><h3>人体工程学</h3><p>以人体工学为基准，久坐不累，贴合生活姿态。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l3 6 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1z"></path></svg></div><h3>原创设计</h3><p>独立设计团队，每年推出原创系列，风格自成一体。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 3v18"></path></svg></div><h3>智能产线</h3><p>自动化生产线，精度与效率并重，品质稳定可控。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7-4.5-7-10a7 7 0 0114 0c0 5.5-7 10-7 10z"></path><circle cx="12" cy="11" r="2.5"></circle></svg></div><h3>贴心售后</h3><p>全国门店联保，5 年质保，售后响应当天达。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 产品预览（来自 is_recommended） -->
+<section class="section">
+  <div class="wrap">
+    <h2>精选产品</h2>
+    <div class="prod-grid">
+      <div class="prod"><div class="thumb">产品图</div><div class="body"><div class="name">胡桃禮·餐桌</div><div class="meta">胡桃禮系列 · 参考价 ¥3,280</div></div></div>
+      <div class="prod"><div class="thumb">产品图</div><div class="body"><div class="name">如意春·沙发</div><div class="meta">如意春系列 · 参考价 ¥6,800</div></div></div>
+      <div class="prod"><div class="thumb">产品图</div><div class="body"><div class="name">禧YUE·床架</div><div class="meta">禧YUE系列 · 参考价 ¥4,200</div></div></div>
+      <div class="prod"><div class="thumb">产品图</div><div class="body"><div class="name">柏悦·书柜</div><div class="meta">柏悦系列 · 参考价 ¥2,980</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 新闻预览 -->
+<section class="section">
+  <div class="wrap">
+    <h2>最新动态</h2>
+    <div class="news-grid">
+      <div class="news"><span class="tag">企业新闻</span><h3>暖禾 2026 春季新品发布会圆满落幕</h3><p>本次发布原创「柏悦」系列，主打极简收纳与模块化组合。</p><div class="date">2026-08-20</div></div>
+      <div class="news"><span class="tag">行业资讯</span><h3>2026 家居消费趋势：智能与环保并行</h3><p>行业报告显示，绿色板材与智能家具需求同比增长 38%。</p><div class="date">2026-08-15</div></div>
+      <div class="news"><span class="tag">企业新闻</span><h3>暖禾 获评省级工业设计中心</h3><p>设计团队再获官方认可，原创能力持续领先。</p><div class="date">2026-08-10</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 入口卡片 -->
+<section class="section">
+  <div class="wrap">
+    <div class="entry-grid">
+      <div class="entry"><div><h3>加入 暖禾</h3><p>查看社会招聘与校园招聘职位，投递你的简历。</p><button class="btn btn-primary">查看招聘</button></div><div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></div></div>
+      <div class="entry"><div><h3>了解品牌</h3><p>关于暖禾、发展历程与品牌理念，一键直达。</p><button class="btn btn-ghost">关于我们</button></div><div class="glyph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 页脚（来自站点设置） -->
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div class="col"><h4>暖禾家具</h4><p>集研发、制造、销售于一体的家居企业。<br>以人体工程学与原创设计，为家庭打造舒适空间。</p></div>
+      <div class="col"><h4>联系我们</h4><p>地址：中国·XX 市 XX 区 XX 路 88 号<br>电话：400-000-0000<br>邮箱：service@暖禾.cn<br>营业时间：09:00 - 18:00</p></div>
+      <div class="col"><h4>快速链接</h4><p>产品中心 · 新案例展示<br>企业新闻 · 行业资讯<br>社会招聘 · 校园招聘</p></div>
+    </div>
+    <div class="copy">© 2026 暖禾家具 · 备案号 示例 ICP 0000000 号</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+# ===== 依赖（体积巨大，绝不入库） =====
+node_modules/
+
+# ===== 构建产物 =====
+dist/
+build/
+out/
+
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# ===== 缓存 / 工具目录 =====
+.vite/
+.workbuddy/
+
+# ===== 环境变量 / 密钥 =====
+.env
+.env.*
+!.env.example
+
+# ===== 日志 =====
+*.log
+
+# ===== 排除的子项目（含嵌套 git 仓库） =====
+xm01/
+
+# ===== OS / 编辑器 =====
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# 本地启动/停止脚本产生的临时文件
+*.tmp

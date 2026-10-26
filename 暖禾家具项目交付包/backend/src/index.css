@@ -1,0 +1,30 @@
+/* 全局基础样式（极简蓝调 · Apple 变体）
+ * 作用：重置浏览器默认 margin/padding、统一字体、设置浅色页面背景。
+ * 组件级视觉（主色/圆角/去阴影）由 antd 主题令牌与内联 style 控制。 */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* 与 antd colorBgLayout 保持一致，避免未加载完主题前的白闪 */
+  background: #f5f5f7;
+  /* 优先使用系统 UI 字体栈，贴近 Apple 风格 */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC',
+    'Helvetica Neue', 'Segoe UI', Roboto, 'Microsoft YaHei', Arial, sans-serif;
+  color: #1d1d1f;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 去除 antd 卡片默认阴影的统一兜底（主约束在 theme token，此处防遗漏） */
+.ant-card {
+  box-shadow: none !important;
+}

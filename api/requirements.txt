@@ -1,0 +1,20 @@
+# 暖禾家具 后端依赖清单（引 开发技术文档 2.2）
+# 安装方式：pip install -r requirements.txt
+# 说明：版本锁定以便复现；bleach 为 M2 富文本 XSS 清洗所需，此处一并预装。
+
+fastapi==0.110.0          # Web 框架，提供路由、依赖注入、Swagger 自动文档
+uvicorn[standard]==0.29.0 # ASGI 服务器（开发用），[standard] 含 websocket 等可选依赖
+# SQLAlchemy 2.0.29 在 Python 3.13 下会因 TypingOnly 断言失败（早于 3.13 支持），
+# 升级到 2.0.36（提供 cp313 预编译 wheel 且兼容 3.13）。
+sqlalchemy==2.0.36        # ORM，使用 2.x 声明式 Mapped 注解
+# pydantic==2.6.4 依赖的 pydantic-core 2.16.3 无 cp313 预编译 wheel，
+# 在 Python 3.13 下会触发 Rust 源码编译并因缺少 MSVC 链接器失败；
+# 故升级到 2.9.2（其 pydantic-core 2.23.x 提供 cp313-win_amd64 预编译 wheel）。
+# FastAPI 0.110 兼容 pydantic <3.0，故不影响功能。
+pydantic==2.9.2           # 请求/响应数据校验（FastAPI 依赖）
+python-jose[cryptography]==3.3.0  # JWT 生成与校验（M2 登录鉴权使用）
+# passlib 1.7.4 与 bcrypt 4+ 不兼容（detect_wrap_bug 会传入超长测试串报错），
+# 故改用官方 bcrypt 库直接计算哈希（见 app/security.py）。
+bcrypt==5.0.0             # 密码哈希（bcrypt），禁止明文存储
+python-multipart==0.0.9   # 支持表单/文件上传（M2 上传接口使用）
+bleach==6.1.0             # 富文本 HTML 白名单清洗，防 XSS（M2 入库前使用）
