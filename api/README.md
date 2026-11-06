@@ -1,6 +1,10 @@
 # 暖禾家具 后端服务（api/）
 
-基于 **FastAPI + SQLAlchemy 2.x + SQLite** 的企业家居网站后端。当前为 **M2 阶段**：鉴权/RBAC、统一响应、13 个业务路由（含前台公开读接口）、文件上传、富文本 XSS 清洗、留言限流、首次登录强制改密、Swagger 注解。
+> **现行说明**：M1~M5 已全部完成并部署。架构、配置与接口契约以
+> [`docs/architecture.md`](../docs/architecture.md)、[`docs/deployment.md`](../docs/deployment.md)、
+> [`docs/api-contract.md`](../docs/api-contract.md) 为准；本文件保留模块级说明。
+
+基于 **FastAPI + SQLAlchemy 2.x + SQLite** 的企业家居网站后端。已实现：鉴权/RBAC、统一响应、13 个业务路由（含前台公开读接口）、文件上传、富文本 XSS 清洗、留言限流、首次登录强制改密、Swagger 注解。
 
 ## 目录结构
 

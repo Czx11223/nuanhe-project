@@ -1,3 +1,6 @@
+> **现行文档（v1.1 修订）**：DDL 唯一权威源为 `api/init.sql`；本文档已修正
+> `case` 保留字引号、索引 DDL 与迁移策略描述。ER 图见根目录 `暖禾-er-diagram.svg`。
+
 # 暖禾家具 · 数据库设计文档
 
 > **文档状态**：开发基线（供 `api/` 后端落地参考）
@@ -296,7 +299,7 @@
 
 ---
 
-## 4. 建表 SQL（DDL，SQLite 可直接执行）
+## 4. 建表 SQL（DDL，SQLite 可直接执行；权威源为 api/init.sql）
 
 > 与开发技术文档 3.2 一致并补充审计字段；为 `api/init.sql` 的唯一数据源。v1.1 变更：11 张业务表尾部新增 `is_activate/created_at/created_date/updated_at/updated_date`，原 `created_at/updated_at` 时间戳重命名为 `created_date/updated_date`。
 
@@ -437,7 +440,7 @@ CREATE TABLE news (
     updated_date   DATETIME
 );
 
-CREATE TABLE case (
+CREATE TABLE "case" (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     title        TEXT    NOT NULL,
     category     TEXT,               -- 项目案例 / 客户案例
@@ -504,7 +507,7 @@ INSERT INTO schema_version(version) VALUES (1);
 | idx_product_category | product | category_id | 按分类筛选产品 |
 | idx_news_category | news | category | 按 企业新闻/行业资讯 筛选 |
 | idx_news_publish | news | (publish_status, published_at) | 已发布列表按时间倒序 |
-| idx_case_status | case | status | 前台仅取启用案例 |
+| idx_case_status | "case" | status | 前台仅取启用案例 |
 | idx_recruitment_type | recruitment | (type, status) | 按 社会/校园 + 招聘中 筛选 |
 | idx_message_status | message | status | 后台按处理状态筛选 |
 | idx_admin_role | admin_user | role_id | 按角色查询管理员 |
@@ -529,12 +532,13 @@ INSERT INTO schema_version(version) VALUES (1);
 
 ---
 
-## 7. 迁移与版本管理
+## 7. 迁移与版本管理（按当前实现修订）
 
-- **策略**：采用 **`init.sql` + `schema_version` 版本表**，不引入 Alembic（演示友好、零额外依赖）。
-- **初始化**：应用启动时检查数据库是否存在；若不存在则执行 `init.sql` 建表并写入 `schema_version=1`，随后执行 `seed.py` 填充种子数据。
-- **升级**：后续 schema 变更在 `api/migrations/` 下新增 `0002_*.sql`、`0003_*.sql` …，启动时比对 `schema_version` 按版本号顺序执行未应用的迁移，执行后写入对应版本号。
-- **兜底**：开发期可用 SQLAlchemy `Base.metadata.create_all` 快速建表，但生产环境以 `init.sql` 为准，保证字段/约束/索引与本文档一致。
+- **权威 DDL**：`api/init.sql`。`api/app/models.py` 已声明同样的 7 个索引，`Base.metadata.create_all` 与 `init.sql` 结果一致。
+- **初始化**：`api/app/init_db.py` 启动时检查 `role` 表是否存在；不存在则逐条执行 `init.sql` 建表、写入 `schema_version=1`，随后调用 `app.seed.seed()` 填充种子。
+- **当前限制**：代码**未实现增量迁移**。`api/migrations/` 目前只是目录约定，启动时不会比对 `schema_version` 或执行 `0002_*.sql`。表结构变更需重建数据库，或先实现迁移执行器再启用该目录。
+- **SQLite 约束**：`api/app/db.py` 通过 connect 事件开启 `PRAGMA foreign_keys=ON`、WAL 与 `busy_timeout=30000`，外键在运行时真实生效。
+- **初始管理员口令**：不再硬编码，由 `ADMIN_INIT_PASSWORD` 指定，未配置时由 `app/seed.py` 随机生成并打印到启动日志，首次登录强制改密。
 
 ---
 

@@ -60,6 +60,8 @@ export default function Header() {
   const [drawer, setDrawer] = useState(false)
   // 站点设置：用于渲染后台配置的 Logo（logo_url）；未配置时回退站名文字
   const [site, setSite] = useState<SiteSetting | null>(null)
+  // Logo 图床失效时回退站名文字，避免页头出现碎图
+  const [logoFailed, setLogoFailed] = useState(false)
 
   useEffect(() => {
     getSiteSettings()
@@ -67,15 +69,18 @@ export default function Header() {
       .catch(() => setSite(null))
   }, [])
 
+  useEffect(() => setLogoFailed(false), [site?.logo_url])
+
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2" onClick={() => setDrawer(false)}>
           {/* 后台「站点设置 → Logo」上传后在此渲染；未配置则回退站名文字 */}
-          {site?.logo_url ? (
+          {site?.logo_url && !logoFailed ? (
             <img
               src={assetUrl(site.logo_url)}
               alt={site.site_name || '暖禾家具'}
+              onError={() => setLogoFailed(true)}
               className="h-11 w-auto max-w-[200px] object-contain shrink-0"
             />
           ) : (

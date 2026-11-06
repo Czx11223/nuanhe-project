@@ -12,6 +12,8 @@ import type { SiteSetting } from '../types'
 export default function Footer() {
   // 站点设置状态：null 表示未加载/加载失败，使用默认文案兜底
   const [site, setSite] = useState<SiteSetting | null>(null)
+  // 与页头一致：Logo 加载失败时回退站名文字
+  const [logoFailed, setLogoFailed] = useState(false)
 
   useEffect(() => {
     // 挂载时拉取站点设置；失败静默兜底（不影响页脚整体展示）
@@ -19,6 +21,8 @@ export default function Footer() {
       .then(setSite)
       .catch(() => setSite(null))
   }, [])
+
+  useEffect(() => setLogoFailed(false), [site?.logo_url])
 
   // 站点名称/备案号等字段允许为空，给出默认值保证渲染
   const siteName = site?.site_name || '暖禾家具'
@@ -29,10 +33,11 @@ export default function Footer() {
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-3">
             {/* 与页头一致：优先展示后台配置的 Logo，未配置则回退站名文字 */}
-            {site?.logo_url ? (
+            {site?.logo_url && !logoFailed ? (
               <img
                 src={assetUrl(site.logo_url)}
                 alt={siteName}
+                onError={() => setLogoFailed(true)}
                 className="h-10 w-auto max-w-[180px] object-contain shrink-0"
               />
             ) : (

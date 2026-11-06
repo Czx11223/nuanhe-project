@@ -6,19 +6,34 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCases } from '../lib/api'
 import ImgPlaceholder from '../components/ImgPlaceholder'
+import ErrorState from '../components/ErrorState'
 import type { CaseItem } from '../types'
 
 export default function Cases() {
   const [list, setList] = useState<CaseItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [reload, setReload] = useState(0)
 
   useEffect(() => {
-    // 拉取启用中的案例（后端已过滤 status=1）；失败兜底为空
+    // 拉取启用中的案例（后端已过滤 status=1）；失败展示可重试错误态
     getCases({ page_size: 100 })
-      .then((d) => setList(d.list))
-      .catch(() => setList([]))
+      .then((d) => {
+        setList(d.list)
+        setError(false)
+      })
+      .catch(() => {
+        setList([])
+        setError(true)
+      })
       .finally(() => setLoading(false))
-  }, [])
+  }, [reload])
+
+  const retry = () => {
+    setError(false)
+    setLoading(true)
+    setReload((n) => n + 1)
+  }
 
   // 客户端再按 sort 升序（置顶优先），与后台排序逻辑一致
   const visible = [...list].sort((a, b) => a.sort - b.sort)
@@ -39,8 +54,11 @@ export default function Cases() {
             </div>
           </Link>
         ))}
-        {!loading && visible.length === 0 && <p className="col-span-full text-center text-gray-400 py-12">暂无案例</p>}
-        {loading && <p className="col-span-full text-center text-gray-400 py-12">加载中…</p>}
+        {error && <ErrorState onRetry={retry} />}
+        {!error && !loading && visible.length === 0 && (
+          <p className="col-span-full text-center text-gray-400 py-12">暂无案例</p>
+        )}
+        {!error && loading && <p className="col-span-full text-center text-gray-400 py-12">加载中…</p>}
       </div>
     </div>
   )

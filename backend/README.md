@@ -1,5 +1,8 @@
 # 暖禾 后台管理系统（backend/）
 
+> **现行说明**：构建与部署以 `edgeone-app/build.py --frontends` 为准（产物落在 `/admin`），
+> 详见 [`docs/deployment.md`](../docs/deployment.md)。本目录不再单独配置 `edgeone.json`。
+
 基于 **React 18 + TypeScript + Ant Design 5 + Vite** 的企业家居网站后台管理界面。
 对应 PRD「后台管理系统」与 UIUX 文档第 4 章（App Shell + 11 模块 + 极简蓝调 Apple 变体）。
 
@@ -37,7 +40,7 @@ backend/
 │  │  ├─ PageHeader.tsx     # 页头组件
 │  │  ├─ RichTextEditor.tsx # TipTap 富文本（含 XSS 清洗由后端负责）
 │  │  └─ ImageUpload.tsx    # 图片上传（调取 /api/upload）
-│  └─ pages/                # 12 个页面（工作台 + 11 模块，含登录/改密）
+│  └─ pages/                # 14 个页面（工作台 + 11 模块，含登录/改密）
 ├─ vite.config.ts           # 端口 5174 + /api、/static 代理到 8000
 ├─ tsconfig.json
 ├─ package.json

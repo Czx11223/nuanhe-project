@@ -7,23 +7,38 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getProductCategories, getProducts } from '../lib/api'
 import ImgPlaceholder from '../components/ImgPlaceholder'
+import ErrorState from '../components/ErrorState'
 import type { Product, ProductCategory } from '../types'
 
 export default function Products() {
-  // 分类树 / 产品列表 / 加载态 / 当前选中分类
+  // 分类树 / 产品列表 / 加载态 / 失败态 / 重试计数 / 当前选中分类
   const [cats, setCats] = useState<ProductCategory[]>([])
   const [list, setList] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [reload, setReload] = useState(0)
   const [cat, setCat] = useState<number | null>(null)
 
   useEffect(() => {
-    // 并行加载分类树与全部上架产品；失败兜底为空数组
+    // 并行加载分类树与全部上架产品；分类失败静默降级，产品请求失败展示可重试错误态
     getProductCategories().then(setCats).catch(() => setCats([]))
     getProducts({ page_size: 100 })
-      .then((d) => setList(d.list))
-      .catch(() => setList([]))
+      .then((d) => {
+        setList(d.list)
+        setError(false)
+      })
+      .catch(() => {
+        setList([])
+        setError(true)
+      })
       .finally(() => setLoading(false))
-  }, [])
+  }, [reload])
+
+  const retry = () => {
+    setError(false)
+    setLoading(true)
+    setReload((n) => n + 1)
+  }
 
   // 扁平化分类树（含二级 children），供名称反查
   const allCats = cats.flatMap((c) => [c, ...(c.children || [])])
@@ -74,10 +89,11 @@ export default function Products() {
             </div>
           </Link>
         ))}
-        {!loading && visible.length === 0 && (
+        {error && <ErrorState onRetry={retry} />}
+        {!error && !loading && visible.length === 0 && (
           <p className="col-span-full text-center text-gray-400 py-12">该分类暂无上架产品</p>
         )}
-        {loading && <p className="col-span-full text-center text-gray-400 py-12">加载中…</p>}
+        {!error && loading && <p className="col-span-full text-center text-gray-400 py-12">加载中…</p>}
       </div>
     </div>
   )

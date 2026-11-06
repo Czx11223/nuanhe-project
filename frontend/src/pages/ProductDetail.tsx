@@ -6,7 +6,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getProduct, getProducts } from '../lib/api'
-import { assetUrl } from '../lib/asset'
 import ImgPlaceholder from '../components/ImgPlaceholder'
 import type { Product } from '../types'
 
@@ -94,7 +93,7 @@ export default function ProductDetail() {
                       mainImg === g ? 'border-brand' : 'border-transparent'
                     }`}
                   >
-                    <img src={assetUrl(g)} alt={`${product.name} 图 ${i + 1}`} className="w-full h-full object-cover" />
+                    <ImgPlaceholder imageUrl={g} label={product.name} className="w-full h-full" rounded="rounded-none" />
                   </button>
                 ))}
             </div>

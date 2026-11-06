@@ -187,6 +187,12 @@ def build_frontends() -> None:
         check=True,
     )
 
+    # 两个前端都构建成功后才清理旧产物。此前用 dirs_exist_ok 合并且从不清空，
+    # 导致每次构建遗留一份带旧 hash 的 bundle（dist/admin/assets 曾累积 4 个 1.6MB 包）。
+    # dist/ 完全是生成物（官网 + 后台 + api/static 演示图），可以整体重建。
+    # 放在 npm build 之后，构建失败时不会删除上一版可用产物。
+    if DIST.exists():
+        shutil.rmtree(DIST)
     DIST.mkdir(parents=True, exist_ok=True)
     shutil.copytree(SRC / "frontend" / "dist", DIST, dirs_exist_ok=True)
     shutil.copytree(SRC / "backend" / "dist", DIST / "admin", dirs_exist_ok=True)

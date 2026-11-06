@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getRecruitments } from '../lib/api'
+import ErrorState from '../components/ErrorState'
 import type { Recruitment, RecruitType } from '../types'
 
 const TABS: { label: string; value: RecruitType | '全部' }[] = [
@@ -27,17 +28,23 @@ export default function Recruitment() {
 
   const [list, setList] = useState<Recruitment[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [reload, setReload] = useState(0)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
+    setError(false)
     // 「全部」时不传 type，后端返回所有在招职位（status=1）
     getRecruitments({ type: typeParam === '全部' ? undefined : typeParam, page_size: 100 })
       .then((d) => {
         if (!cancelled) setList(d.list)
       })
       .catch(() => {
-        if (!cancelled) setList([])
+        if (!cancelled) {
+          setList([])
+          setError(true)
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -45,7 +52,9 @@ export default function Recruitment() {
     return () => {
       cancelled = true
     }
-  }, [typeParam])
+  }, [typeParam, reload])
+
+  const retry = () => setReload((n) => n + 1)
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -80,8 +89,11 @@ export default function Recruitment() {
             <span className="text-brand">查看 →</span>
           </Link>
         ))}
-        {!loading && list.length === 0 && <p className="text-center text-gray-400 py-12">该类型暂无在招职位</p>}
-        {loading && <p className="text-center text-gray-400 py-12">加载中…</p>}
+        {error && <ErrorState onRetry={retry} className="text-center py-12" />}
+        {!error && !loading && list.length === 0 && (
+          <p className="text-center text-gray-400 py-12">该类型暂无在招职位</p>
+        )}
+        {!error && loading && <p className="text-center text-gray-400 py-12">加载中…</p>}
       </div>
     </div>
   )

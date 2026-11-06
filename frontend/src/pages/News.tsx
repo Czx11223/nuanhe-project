@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getNews } from '../lib/api'
 import ImgPlaceholder from '../components/ImgPlaceholder'
+import ErrorState from '../components/ErrorState'
 import type { News, NewsCategory } from '../types'
 
 const TABS: (NewsCategory | '全部')[] = ['全部', '企业新闻', '行业资讯']
@@ -22,17 +23,23 @@ export default function News() {
 
   const [list, setList] = useState<News[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [reload, setReload] = useState(0)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
+    setError(false)
     // 分类为「全部」时不传 category，后端返回全部已发布新闻
     getNews({ category: catParam === '全部' ? undefined : catParam, page_size: 100 })
       .then((d) => {
         if (!cancelled) setList(d.list)
       })
       .catch(() => {
-        if (!cancelled) setList([])
+        if (!cancelled) {
+          setList([])
+          setError(true)
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -40,7 +47,9 @@ export default function News() {
     return () => {
       cancelled = true
     }
-  }, [catParam])
+  }, [catParam, reload])
+
+  const retry = () => setReload((n) => n + 1)
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -72,8 +81,11 @@ export default function News() {
             </div>
           </Link>
         ))}
-        {!loading && list.length === 0 && <p className="col-span-full text-center text-gray-400 py-12">暂无相关新闻</p>}
-        {loading && <p className="col-span-full text-center text-gray-400 py-12">加载中…</p>}
+        {error && <ErrorState onRetry={retry} />}
+        {!error && !loading && list.length === 0 && (
+          <p className="col-span-full text-center text-gray-400 py-12">暂无相关新闻</p>
+        )}
+        {!error && loading && <p className="col-span-full text-center text-gray-400 py-12">加载中…</p>}
       </div>
     </div>
   )

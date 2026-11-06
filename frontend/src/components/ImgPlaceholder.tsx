@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react'
 import { assetUrl } from '../lib/asset'
 
 interface Props {
-  /** 后端返回的图片地址（image_url / cover_image）；为空时回退品牌实色占位 */
+  /** 后端返回的图片地址（image_url / cover_image）；为空或加载失败时回退品牌实色占位 */
   imageUrl?: string | null
   /** 占位时显示的文案（如产品名） */
   label?: string
@@ -9,7 +10,7 @@ interface Props {
   rounded?: string
 }
 
-// 图片占位组件：有图渲染 <img>，无图渲染品牌实色占位（bg-brand）。
+// 图片占位组件：有图渲染 <img>，无图 / 图片加载失败渲染品牌实色占位（bg-brand）。
 // 遵守 UIUX 2.5 约束：不使用 box-shadow / 渐变 / text-shadow。
 export default function ImgPlaceholder({
   imageUrl,
@@ -17,13 +18,18 @@ export default function ImgPlaceholder({
   className = '',
   rounded = 'rounded-lg'
 }: Props) {
-  // 后端返回了真实图片地址 → 直接渲染图片（object-cover 保证铺满容器）
+  // 图片地址失效（404 / 静态目录被清空 / 云函数 /tmp 重置）时降级为占位，避免碎图
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [imageUrl])
+
   // assetUrl：生产环境后端独立域名时自动补全前缀，开发期为空走代理
-  if (imageUrl) {
+  if (imageUrl && !failed) {
     return (
       <img
         src={assetUrl(imageUrl)}
         alt={label || ''}
+        loading="lazy"
+        onError={() => setFailed(true)}
         className={`${rounded} ${className} w-full h-full object-cover`}
       />
     )
