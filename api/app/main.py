@@ -56,11 +56,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS 跨域中间件：允许前台(5173)与后台(5174)访问
+# CORS 跨域中间件：开发期允许 5173/5174，生产通过 CORS_ORIGINS 配置 Pages 域名。
+# 注意：allow_credentials=True 时浏览器不接受通配 "*"，故配 "*" 时自动关闭凭证
+#       （本项目鉴权走 Authorization Bearer，不依赖 Cookie，关闭凭证不影响功能）。
+_allow_all = "*" in CORS_ORIGINS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=not _allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
 )

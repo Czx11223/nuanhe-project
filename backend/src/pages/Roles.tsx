@@ -12,13 +12,14 @@ import { PERM_OPTIONS } from '../lib/perm';
 // 权限键 → 中文标签
 const permLabel = (key: string) => PERM_OPTIONS.find((o) => o.key === key)?.label || key;
 
-// 渲染权限范围标签
-const renderPerms = (perms: string[]) => {
-  if (perms.includes('*')) return <Tag color="blue">全部</Tag>;
-  if (!perms.length) return <Tag>无</Tag>;
+// 渲染权限范围标签（permissions 异常缺失时兜底为空数组，避免整页白屏）
+const renderPerms = (perms?: string[]) => {
+  const list = Array.isArray(perms) ? perms : [];
+  if (list.includes('*')) return <Tag color="blue">全部</Tag>;
+  if (!list.length) return <Tag>无</Tag>;
   return (
     <Space size={4} wrap>
-      {perms.map((p) => (
+      {list.map((p) => (
         <Tag key={p}>{permLabel(p)}</Tag>
       ))}
     </Space>

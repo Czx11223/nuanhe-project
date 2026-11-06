@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getSiteSettings } from '../lib/api'
+import { assetUrl } from '../lib/asset'
 import type { SiteSetting } from '../types'
 
 export default function Footer() {
@@ -30,7 +31,7 @@ export default function Footer() {
             {/* 与页头一致：优先展示后台配置的 Logo，未配置则回退站名文字 */}
             {site?.logo_url ? (
               <img
-                src={site.logo_url}
+                src={assetUrl(site.logo_url)}
                 alt={siteName}
                 className="h-10 w-auto max-w-[180px] object-contain shrink-0"
               />

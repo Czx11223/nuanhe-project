@@ -77,6 +77,7 @@ class RoleUpdate(ORMModel):
 class RoleOut(RoleBase):
     id: int
     is_activate: int
+    permissions: list[str] = []
     created_date: Optional[datetime] = None
     updated_date: Optional[datetime] = None
 

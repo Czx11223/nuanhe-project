@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { getSiteSettings } from '../lib/api'
+import { assetUrl } from '../lib/asset'
 import type { SiteSetting } from '../types'
 
 interface NavItem {
@@ -73,7 +74,7 @@ export default function Header() {
           {/* 后台「站点设置 → Logo」上传后在此渲染；未配置则回退站名文字 */}
           {site?.logo_url ? (
             <img
-              src={site.logo_url}
+              src={assetUrl(site.logo_url)}
               alt={site.site_name || '暖禾家具'}
               className="h-11 w-auto max-w-[200px] object-contain shrink-0"
             />

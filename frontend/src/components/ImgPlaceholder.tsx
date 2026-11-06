@@ -1,3 +1,5 @@
+import { assetUrl } from '../lib/asset'
+
 interface Props {
   /** 后端返回的图片地址（image_url / cover_image）；为空时回退品牌实色占位 */
   imageUrl?: string | null
@@ -16,10 +18,11 @@ export default function ImgPlaceholder({
   rounded = 'rounded-lg'
 }: Props) {
   // 后端返回了真实图片地址 → 直接渲染图片（object-cover 保证铺满容器）
+  // assetUrl：生产环境后端独立域名时自动补全前缀，开发期为空走代理
   if (imageUrl) {
     return (
       <img
-        src={imageUrl}
+        src={assetUrl(imageUrl)}
         alt={label || ''}
         className={`${rounded} ${className} w-full h-full object-cover`}
       />

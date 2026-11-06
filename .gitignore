@@ -23,6 +23,8 @@ env/
 .env
 .env.*
 !.env.example
+# 部署脚本的状态文件（含随机 JWT 密钥与资源 ID，不入库）
+deploy/.provision-state.json
 
 # ===== 日志 =====
 *.log

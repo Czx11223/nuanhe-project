@@ -1,0 +1,14 @@
+# Docker 构建上下文忽略项（FC 镜像只需 api/ 与 deploy/fc/）
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.env
+**/dist
+.git
+.gitignore
+.workbuddy
+暖禾_ppt
+暖禾家具项目交付包
+docs
+*.log
+README.md
