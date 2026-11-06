@@ -15,6 +15,10 @@ interface AuthState {
   setAuth: (token: string, user: UserOut, mustChange: boolean) => void;
   /** 更新当前用户（如改密后刷新） */
   setUser: (user: UserOut) => void;
+  /** 仅刷新令牌（改密后 user 不变，避免 user 为空时丢令牌） */
+  setToken: (token: string) => void;
+  /** 同步服务端权威的「首次改密」状态 */
+  setMustChange: (value: boolean) => void;
   /** 退出登录，清理本地态 */
   logout: () => void;
   /** 判定是否拥有某权限（'*' 代表全部） */
@@ -35,15 +39,22 @@ function loadUser(): UserOut | null {
   }
 }
 
+const MUST_CHANGE_KEY = '暖禾_must_change';
+
+function loadMustChange(): boolean {
+  return localStorage.getItem(MUST_CHANGE_KEY) === '1';
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: loadToken(),
   user: loadUser(),
   permissions: loadUser()?.permissions ?? [],
-  mustChange: false,
+  mustChange: loadMustChange(),
 
   setAuth: (token, user, mustChange) => {
     localStorage.setItem('暖禾_token', token);
     localStorage.setItem('暖禾_user', JSON.stringify(user));
+    localStorage.setItem(MUST_CHANGE_KEY, mustChange ? '1' : '0');
     set({ token, user, permissions: user.permissions ?? [], mustChange });
   },
 
@@ -52,9 +63,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user, permissions: user.permissions ?? [] });
   },
 
+  setToken: (token) => {
+    localStorage.setItem('暖禾_token', token);
+    set({ token });
+  },
+
+  setMustChange: (value) => {
+    localStorage.setItem(MUST_CHANGE_KEY, value ? '1' : '0');
+    set({ mustChange: value });
+  },
+
   logout: () => {
     localStorage.removeItem('暖禾_token');
     localStorage.removeItem('暖禾_user');
+    localStorage.removeItem(MUST_CHANGE_KEY);
     set({ token: null, user: null, permissions: [], mustChange: false });
   },
 

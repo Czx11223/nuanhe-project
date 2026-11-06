@@ -108,4 +108,6 @@ def me(current: AdminUser = Depends(get_current_user), db: Session = Depends(get
         permissions=perms,
         status=current.status,
     )
-    return success(user_out)
+    payload = user_out.model_dump()
+    payload["must_change_password"] = bool(current.must_change_pwd)
+    return success(payload)

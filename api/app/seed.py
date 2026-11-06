@@ -1,14 +1,35 @@
 """种子数据模块（首次初始化写入）
-功能：写入 3 个角色、默认管理员(admin/admin123)、站点设置单条、7 个示例产品分类。
+功能：写入 3 个角色、默认管理员（口令由环境变量或随机生成）、站点设置单条、7 个示例产品分类。
 幂等性：每张表仅在其为空时才插入，保证服务重复启动不会重复写入或报错。
 
 数据来源：数据库设计文档 第 6 章 种子数据。
 审计字段约定：种子插入时 created_at 记为 'system'，created_date 由 ORM 默认值填充，
 updated_* 初始为空；业务运行时由后端在新增/修改时自动填充当前登录账号与时间。
 """
+import os
+import secrets
+
 from app.db import SessionLocal
 from app.models import Role, AdminUser, SiteSetting, ProductCategory
 from app.security import hash_password
+
+
+def _initial_admin_password() -> str:
+    """初始管理员口令：优先 ADMIN_INIT_PASSWORD，否则随机生成并只在启动时打印一次。
+
+    源码与文档均不再保存任何可用口令；首次登录强制改密（见 routers/auth.py）。
+    """
+    configured = os.environ.get("ADMIN_INIT_PASSWORD")
+    if configured:
+        return configured
+    generated = secrets.token_urlsafe(16)
+    print(
+        "[SECURITY] 初始管理员口令（仅显示一次，请立即保存并登录后修改）："
+        f" admin / {generated}",
+        flush=True,
+    )
+    return generated
+
 
 # 示例一级产品分类（引 数据库设计文档 6.4）
 SEED_CATEGORIES = ["胡桃禮", "如意春", "禧YUE", "柏悦", "蓝宝嘉", "办公家具", "软体"]
@@ -50,7 +71,7 @@ def seed() -> None:
             admin_role = db.query(Role).filter_by(code="super_admin").first()
             db.add(AdminUser(
                 username="admin",
-                password_hash=hash_password("admin123"),  # 首次登录应强制修改（M2 处理）
+                password_hash=hash_password(_initial_admin_password()),  # 首次登录应强制修改（M2 处理）
                 real_name="系统管理员",
                 role_id=admin_role.id,
                 status=1,

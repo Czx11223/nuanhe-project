@@ -36,15 +36,19 @@ export default function News() {
   const [category, setCategory] = useState<string | undefined>();
   const [pub, setPub] = useState<number | undefined>();
 
-  const fetchData = async (page = 1) => {
+  type Filters = { keyword: string; category: string | undefined; pub: number | undefined };
+  const fetchData = async (page = 1, f: Partial<Filters> = {}) => {
+    const k = f.keyword ?? keyword;
+    const cat = 'category' in f ? f.category : category;
+    const pubVal = 'pub' in f ? f.pub : pub;
     setLoading(true);
     try {
       const r = await get<PageData>('/api/news/admin', {
         page,
         page_size: 10,
-        keyword: keyword || undefined,
-        category,
-        publish_status: pub,
+        keyword: k || undefined,
+        category: cat,
+        publish_status: pubVal,
       });
       setData(r);
     } catch {}
@@ -140,7 +144,7 @@ export default function News() {
           style={{ width: 200 }}
           onSearch={(v) => {
             setKeyword(v);
-            fetchData(1);
+            fetchData(1, { keyword: v });
           }}
         />
         <Select
@@ -150,7 +154,7 @@ export default function News() {
           value={category}
           onChange={(v) => {
             setCategory(v);
-            fetchData(1);
+            fetchData(1, { category: v });
           }}
           options={[
             { value: '企业新闻', label: '企业新闻' },
@@ -164,7 +168,7 @@ export default function News() {
           value={pub}
           onChange={(v) => {
             setPub(v);
-            fetchData(1);
+            fetchData(1, { pub: v });
           }}
           options={[
             { value: 1, label: '已发布' },

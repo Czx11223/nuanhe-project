@@ -309,3 +309,18 @@ class SchemaVersion(Base):
     applied_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, comment="应用时间"
     )
+
+
+# ---------------------------------------------------------------------------
+# 查询索引：与 api/init.sql 保持同名同列，确保用 Base.metadata.create_all 建库时
+# 不会丢失这些索引（此前模型层没有声明，只有 init.sql 有）。
+# ---------------------------------------------------------------------------
+from sqlalchemy import Index as _Index
+
+_Index("idx_product_category", Product.__table__.c.category_id)
+_Index("idx_news_category", News.__table__.c.category)
+_Index("idx_news_publish", News.__table__.c.publish_status, News.__table__.c.published_at)
+_Index("idx_case_status", Case.__table__.c.status)
+_Index("idx_recruitment_type", Recruitment.__table__.c.type, Recruitment.__table__.c.status)
+_Index("idx_message_status", Message.__table__.c.status)
+_Index("idx_admin_role", AdminUser.__table__.c.role_id)

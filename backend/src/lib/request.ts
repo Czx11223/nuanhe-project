@@ -48,7 +48,9 @@ instance.interceptors.response.use(
       localStorage.removeItem('暖禾_token');
       localStorage.removeItem('暖禾_user');
       message.error('登录已失效，请重新登录');
-      if (location.pathname !== '/login') location.href = '/login';
+      const base = import.meta.env.VITE_BASE_PATH || '';
+      const loginPath = `${base}/login`;
+      if (location.pathname !== loginPath) location.href = loginPath;
     } else if (status === 403) {
       message.error('无权访问该资源');
     } else if (status === 429) {
@@ -60,7 +62,7 @@ instance.interceptors.response.use(
         typeof detail === 'string'
           ? detail
           : Array.isArray(detail)
-          ? detail.map((d: any) => d.msg).join('；')
+          ? detail.map((d: { msg?: string }) => d.msg ?? '').join('；')
           : '参数校验失败';
       message.error(text || '参数校验失败');
     } else if (status === 404) {
@@ -87,9 +89,9 @@ instance.interceptors.response.use(
  *   - undefined / null / 空字符串 "" 一律不发送（等价于「不传或传 null」）；
  *   - 保留数字 0（如 status=0 下架筛选、is_recommended=0），避免误删有效筛选。
  */
-export function cleanParams(params?: Record<string, any>): Record<string, any> | undefined {
+export function cleanParams(params?: Record<string, unknown>): Record<string, unknown> | undefined {
   if (!params) return undefined;
-  const out: Record<string, any> = {};
+  const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(params)) {
     // 分页参数：严格整型归一（禁止字符串页码）。非法值不传，交给后端默认值兜底。
     if (k === 'page' || k === 'page_size') {
@@ -104,28 +106,31 @@ export function cleanParams(params?: Record<string, any>): Record<string, any> |
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-export function get<T = any>(url: string, params?: Record<string, any>): Promise<T> {
+export function get<T = any>(url: string, params?: Record<string, unknown>): Promise<T> {
   // params 经 cleanParams 净化：空串/undefined/null 不进入查询串
   return instance.get(url, { params: cleanParams(params) }) as unknown as Promise<T>;
 }
-export function post<T = any>(url: string, data?: any): Promise<T> {
+export function post<T = any>(url: string, data?: unknown): Promise<T> {
   return instance.post(url, data) as unknown as Promise<T>;
 }
-export function put<T = any>(url: string, data?: any): Promise<T> {
+export function put<T = any>(url: string, data?: unknown): Promise<T> {
   return instance.put(url, data) as unknown as Promise<T>;
 }
-export function patch<T = any>(url: string, data?: any): Promise<T> {
+export function patch<T = any>(url: string, data?: unknown): Promise<T> {
   return instance.patch(url, data) as unknown as Promise<T>;
 }
-export function del<T = any>(url: string, data?: any): Promise<T> {
+export function del<T = any>(url: string, data?: unknown): Promise<T> {
   return instance.delete(url, { data }) as unknown as Promise<T>;
 }
 
-// 把后端返回的相对静态地址（如 /static/uploads/xxx）拼接为可访问的完整地址。
+// 把后端返回的相对静态地址解析为可访问地址。
+// 演示图片由静态站点 /static/ 直出；部署版上传接口直接返回 /api/static/uploads/...
+// （指向云函数临时目录），原样返回即可。本地开发时 /static/... 走 Vite 代理。
 export function resolveStatic(url?: string | null): string {
   if (!url) return '';
   if (url.startsWith('http')) return url;
-  return API_BASE + url; // 开发期 API_BASE 为空，由 Vite 代理转发 /static
+  const p = url.startsWith('/') ? url : `/${url}`;
+  return p;
 }
 
 export default instance;

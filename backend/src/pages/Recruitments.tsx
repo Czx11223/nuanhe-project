@@ -30,15 +30,19 @@ export default function Recruitments() {
   const [type, setType] = useState<number | undefined>();
   const [status, setStatus] = useState<number | undefined>();
 
-  const fetchData = async (page = 1) => {
+  type Filters = { keyword: string; type: number | undefined; status: number | undefined };
+  const fetchData = async (page = 1, f: Partial<Filters> = {}) => {
+    const k = f.keyword ?? keyword;
+    const t = 'type' in f ? f.type : type;
+    const s = 'status' in f ? f.status : status;
     setLoading(true);
     try {
       const r = await get<PageData>('/api/recruitments/admin', {
         page,
         page_size: 10,
-        keyword: keyword || undefined,
-        type,
-        status,
+        keyword: k || undefined,
+        type: t,
+        status: s,
       });
       setData(r);
     } catch {}
@@ -138,7 +142,7 @@ export default function Recruitments() {
           style={{ width: 200 }}
           onSearch={(v) => {
             setKeyword(v);
-            fetchData(1);
+            fetchData(1, { keyword: v });
           }}
         />
         <Select
@@ -148,7 +152,7 @@ export default function Recruitments() {
           value={type}
           onChange={(v) => {
             setType(v);
-            fetchData(1);
+            fetchData(1, { type: v });
           }}
           options={[
             { value: 1, label: '社会招聘' },
@@ -162,7 +166,7 @@ export default function Recruitments() {
           value={status}
           onChange={(v) => {
             setStatus(v);
-            fetchData(1);
+            fetchData(1, { status: v });
           }}
           options={[
             { value: 1, label: '招聘中' },

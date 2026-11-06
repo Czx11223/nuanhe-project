@@ -6,6 +6,7 @@
      将当前登录管理员账号写入 created_at / updated_at（人员字段，引 v1.1 审计约定）。
 """
 import json
+import re
 
 import bleach
 
@@ -30,7 +31,7 @@ def clean_html(html: str | None) -> str | None:
     """对富文本 HTML 做白名单清洗；None 原样返回。
 
     - 仅保留 _ALLOWED_TAGS 中的标签与 _ALLOWED_ATTRS 中的属性，其余一律剥离。
-    - 链接强制加 rel="noopener"（前端渲染时也应保证），降低反向标签页劫持风险。
+    - 链接强制加 rel="noopener noreferrer"，降低反向标签页劫持风险。
     """
     if html is None:
         return None
@@ -40,7 +41,24 @@ def clean_html(html: str | None) -> str | None:
         attributes=_ALLOWED_ATTRS,
         strip=True,           # 不在白名单的标签被剥离（而非转义保留文本）
     )
+    # bleach 不会自动补 rel，这里统一去掉已有 rel 后为 _blank 链接强制注入，
+    # 防止反向标签页劫持（reverse tabnabbing）。
+    cleaned = re.sub(r'\s+rel="[^"]*"', "", cleaned)
+    cleaned = cleaned.replace(
+        'target="_blank"', 'target="_blank" rel="noopener noreferrer"'
+    )
     return cleaned
+
+
+def clean_plain_text(value: str | None, max_length: int = 2000) -> str | None:
+    """纯文本字段清洗：剥净全部 HTML 标签并截断长度，防存储型 XSS / 撑库。
+
+    用于留言等不允许多次富文本的用户输入；富文本请改用 clean_html。
+    """
+    if value is None:
+        return None
+    text = bleach.clean(value, tags=[], attributes={}, strip=True)
+    return text[:max_length]
 
 
 # ----------------------------------------------------------------------------

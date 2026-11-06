@@ -62,7 +62,7 @@ npm run build
 npm run preview
 ```
 
-默认管理员：`admin / admin123`（首次登录强制改密）。
+默认管理员：`admin / <初始化日志中的随机口令>`（首次登录强制改密）。
 
 > 演示内容：后端提供 `python -m app.seed_demo`（api/ 目录）可填充轮播/产品/新闻/案例/招聘/关于/留言演示数据，后台各模块即可直接演示。
 

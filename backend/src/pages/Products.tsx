@@ -50,19 +50,21 @@ export default function Products() {
     } catch {}
   };
 
-  const fetchData = async (page = 1) => {
+  // 筛选值必须随本次请求显式传入：setState 是异步调度，紧随其后同步调用 fetchData
+  // 会读到上一次渲染的闭包值，导致首次搜索/筛选「延迟一拍」。
+  type Filters = { keyword: string; catId: number | undefined; status: number | undefined };
+  const fetchData = async (page = 1, f: Partial<Filters> = {}) => {
+    const k = f.keyword ?? keyword;
+    const c = 'catId' in f ? f.catId : catId;
+    const s = 'status' in f ? f.status : status;
     setLoading(true);
     try {
-      // 分页请求契约（修复「参数校验失败」）：
-      //  1. page/page_size 必须为数字（Number 强转兜底，禁止字符串页码）
-      //  2. 筛选为空时不传（?? undefined / trim 后空串不传），避免发出 category_id= 空串触发后端 422
-      //  3. category_id/status 严格整型；keyword 去除首尾空白
       const r = await get<PageData>('/api/products/admin', {
         page: Number(page) || 1,
         page_size: 12,
-        keyword: (keyword || '').trim() || undefined,
-        category_id: catId ?? undefined,
-        status: status ?? undefined,
+        keyword: (k || '').trim() || undefined,
+        category_id: c ?? undefined,
+        status: s ?? undefined,
       });
       setData(r);
     } catch {}
@@ -195,7 +197,7 @@ export default function Products() {
           style={{ width: 220 }}
           onSearch={(v) => {
             setKeyword(v);
-            fetchData(1);
+            fetchData(1, { keyword: v });
           }}
         />
         <Select
@@ -205,7 +207,7 @@ export default function Products() {
           value={catId}
           onChange={(v) => {
             setCatId(v);
-            fetchData(1);
+            fetchData(1, { catId: v });
           }}
           options={catFlat.map((c) => ({ value: c.id, label: c.name }))}
         />
@@ -216,7 +218,7 @@ export default function Products() {
           value={status}
           onChange={(v) => {
             setStatus(v);
-            fetchData(1);
+            fetchData(1, { status: v });
           }}
           options={[
             { value: 1, label: '上架' },

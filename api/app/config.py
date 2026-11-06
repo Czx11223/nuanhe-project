@@ -46,7 +46,14 @@ DB_PATH = _get("DB_PATH", os.path.join(_BASE_DIR, "app.db"))
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 # ---------- JWT ----------
-JWT_SECRET = _get("JWT_SECRET", "change_me_in_prod")   # 生产务必替换
+# JWT 签名密钥必须由运行环境提供；缺失或仍为示例值时拒绝启动，避免可被伪造的令牌。
+# 生成：python -c "import secrets; print(secrets.token_urlsafe(48))"
+JWT_SECRET = _get("JWT_SECRET", "")
+if not JWT_SECRET or JWT_SECRET in {"change_me_in_prod", "changeme", "secret"}:
+    raise RuntimeError(
+        "JWT_SECRET 未配置或仍为示例值：请在 api/.env 或环境变量中设置高熵密钥"
+        '（python -c "import secrets; print(secrets.token_urlsafe(48))"）'
+    )
 JWT_ALGORITHM = "HS256"                                # HS256 对称签名
 JWT_EXPIRE_MINUTES = int(_get("JWT_EXPIRE_MINUTES", "120"))
 
@@ -59,6 +66,6 @@ UPLOAD_DIR = _get("UPLOAD_DIR", os.path.join(_BASE_DIR, "static", "uploads"))
 CORS_ORIGINS = [
     o.strip() for o in _get(
         "CORS_ORIGINS",
-        "http://127.0.0.1:5173,http://127.0.0.1:5174",
+        "http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:5173,http://127.0.0.1:5174",
     ).split(",") if o.strip()
 ]

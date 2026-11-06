@@ -17,7 +17,8 @@ interface ChangePwdForm {
 export default function ChangePassword() {
   const { message } = App.useApp();
   const navigate = useNavigate();
-  const { user, setAuth } = useAuthStore();
+  const setToken = useAuthStore((s) => s.setToken);
+  const setMustChange = useAuthStore((s) => s.setMustChange);
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values: ChangePwdForm) => {
@@ -26,7 +27,8 @@ export default function ChangePassword() {
       // 后端：POST /api/auth/change-password（需登录，返回新 access_token）
       const res = await post<{ access_token: string }>('/api/auth/change-password', values);
       // 用户身份不变，仅刷新令牌并清除“需改密”状态
-      if (user) setAuth(res.access_token, user, false);
+      setToken(res.access_token);
+      setMustChange(false);
       message.success('密码修改成功');
       navigate('/', { replace: true });
     } catch {

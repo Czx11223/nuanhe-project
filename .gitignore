@@ -2,7 +2,9 @@
 node_modules/
 
 # ===== 构建产物 =====
-dist/
+# 子项目 dist 不入库；edgeone-app/dist 是提交产物（云端构建无法安装子项目依赖）
+/frontend/dist/
+/backend/dist/
 build/
 out/
 
@@ -25,6 +27,8 @@ env/
 !.env.example
 # 部署脚本的状态文件（含随机 JWT 密钥与资源 ID，不入库）
 deploy/.provision-state.json
+# 部署凭证（AK/SK、ACR 固定密码），仅存本机，绝不入库
+deploy/.secrets.json
 
 # ===== 日志 =====
 *.log
@@ -40,3 +44,9 @@ Thumbs.db
 
 # 本地启动/停止脚本产生的临时文件
 *.tmp
+
+# ===== 数据库 / 构建缓存 / 平台产物（含凭据与资源 ID，绝不入库） =====
+*.db
+*.db.*
+*.tsbuildinfo
+.edgeone/

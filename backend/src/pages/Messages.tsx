@@ -6,6 +6,7 @@ import { App, Button, Form, Input, Modal, Select, Space, Table, Tag } from 'antd
 import { MessageOutlined } from '@ant-design/icons';
 import PageHeader from '../components/PageHeader';
 import { get, put } from '../lib/request';
+import { tablePagination } from '../lib/pagination';
 import type { Message } from '../lib/types';
 
 interface PageData {
@@ -38,15 +39,19 @@ export default function Messages() {
   const [type, setType] = useState<string | undefined>();
   const [keyword, setKeyword] = useState('');
 
-  const fetchData = async (page = 1) => {
+  type Filters = { status: number | undefined; type: string | undefined; keyword: string };
+  const fetchData = async (page = 1, f: Partial<Filters> = {}) => {
+    const s = 'status' in f ? f.status : status;
+    const t = 'type' in f ? f.type : type;
+    const k = f.keyword ?? keyword;
     setLoading(true);
     try {
       const r = await get<PageData>('/api/messages', {
         page,
         page_size: 15,
-        status,
-        type,
-        keyword: keyword || undefined,
+        status: s,
+        type: t,
+        keyword: k || undefined,
       });
       setData(r);
     } catch {}
@@ -108,7 +113,7 @@ export default function Messages() {
           value={status}
           onChange={(v) => {
             setStatus(v);
-            fetchData(1);
+            fetchData(1, { status: v });
           }}
           options={[
             { value: 0, label: '待处理' },
@@ -123,7 +128,7 @@ export default function Messages() {
           value={type}
           onChange={(v) => {
             setType(v);
-            fetchData(1);
+            fetchData(1, { type: v });
           }}
           options={[
             { value: '留言', label: '留言' },
@@ -138,7 +143,7 @@ export default function Messages() {
           style={{ width: 220 }}
           onSearch={(v) => {
             setKeyword(v);
-            fetchData(1);
+            fetchData(1, { keyword: v });
           }}
         />
       </Space>
@@ -148,12 +153,10 @@ export default function Messages() {
         loading={loading}
         dataSource={data.list}
         columns={columns}
-        pagination={{
-          current: data.page,
-          pageSize: data.page_size,
-          total: data.total,
-          onChange: (p) => fetchData(p),
-        }}
+        pagination={tablePagination(
+          { page: data.page, page_size: data.page_size, total: data.total },
+          (p) => fetchData(p),
+        )}
         bordered
         style={{ boxShadow: 'none' }}
       />

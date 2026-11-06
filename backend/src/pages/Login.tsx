@@ -1,6 +1,6 @@
 // 登录页
 // 功能：账号密码登录；成功后写入登录态；若后端标记“首次登录需改密”则跳转改密页，否则回跳来源页。
-// 默认账号 admin / admin123（引后台原型登录卡片）。
+// 初始管理员口令由初始化流程生成，页面不预填任何凭据。
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { App, Button, Card, Form, Input, Typography } from 'antd';
@@ -63,7 +63,7 @@ export default function Login() {
         <Form<LoginForm>
           layout="vertical"
           onFinish={onFinish}
-          initialValues={{ username: 'admin', password: 'admin123' }}
+          initialValues={{ username: 'admin' }}
         >
           <Form.Item
             name="username"

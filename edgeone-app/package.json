@@ -1,0 +1,11 @@
+{
+  "name": "nuanhe-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "暖禾家具官网 + 后台管理 + FastAPI 云函数（EdgeOne Makers）",
+  "scripts": {
+    "build": "node build.mjs",
+    "sync": "python build.py",
+    "build:full": "python build.py --frontends"
+  }
+}

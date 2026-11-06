@@ -30,13 +30,15 @@ export default function Cases() {
   const [form] = Form.useForm();
 
   // 服务端分页请求：携带 page/page_size/keyword（keyword 为空串不传，避免空参数）
-  const fetchData = async (page = 1) => {
+  type Filters = { keyword: string };
+  const fetchData = async (page = 1, f: Partial<Filters> = {}) => {
+    const k = f.keyword ?? keyword;
     setLoading(true);
     try {
       const r = await get<PageData>('/api/cases/admin', {
         page,
         page_size: 10,
-        keyword: (keyword || '').trim() || undefined,
+        keyword: (k || '').trim() || undefined,
       });
       setData(r);
     } catch {}
@@ -129,7 +131,7 @@ export default function Cases() {
           style={{ width: 220 }}
           onSearch={(v) => {
             setKeyword(v);
-            fetchData(1);
+            fetchData(1, { keyword: v });
           }}
         />
       </Space>

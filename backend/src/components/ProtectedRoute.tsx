@@ -12,9 +12,11 @@ interface Props {
   children: ReactNode;
   /** 访问该路由所需权限键；不传表示任意已登录用户可访问（如工作台） */
   perm?: string;
+  /** 允许「首次登录未改密」用户访问（改密页专用） */
+  allowMustChange?: boolean;
 }
 
-export default function ProtectedRoute({ children, perm }: Props) {
+export default function ProtectedRoute({ children, perm, allowMustChange }: Props) {
   const { token, mustChange, hasPerm } = useAuthStore();
   const location = useLocation();
 
@@ -24,7 +26,7 @@ export default function ProtectedRoute({ children, perm }: Props) {
   }
 
   // 2. 需强制改密 → 改密页
-  if (mustChange) {
+  if (mustChange && !allowMustChange) {
     return <Navigate to="/change-password" replace />;
   }
 

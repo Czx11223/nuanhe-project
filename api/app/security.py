@@ -8,16 +8,16 @@
      越权或无权限返回 403；首次登录未改密也返回 403（强制先改密）。
 
 设计说明（不改动数据库设计文档 v1.1 的表结构）：
-  - 数据库 admin_user 表没有“是否需改密”字段；本模块用「last_login_at 是否为空」
-    判定是否首次登录（种子管理员 last_login_at 初始为空），并在 JWT 中放入
-    must_change_pwd 声明。登录时不写 last_login_at，改密成功后再写入，
-    从而严格实现“首次登录强制修改初始密码”。
+  - 数据库 admin_user 表没有“是否需改密”字段；本模块统一用「last_login_at 是否为空」
+    判定是否首次登录（种子管理员 last_login_at 初始为空）。
+    must_change_pwd 一律以数据库为准，不再信任 JWT 声明；登录时不写 last_login_at，
+    改密成功后再写入，从而严格实现“首次登录强制修改初始密码”。
 """
 import json
 from datetime import datetime, timedelta
 
 import bcrypt
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
@@ -95,8 +95,15 @@ def _load_permissions(role_id: int) -> list:
 # auto_error=False 让缺失令牌时由我们自己返回 401（而非库默认的 403）。
 _bearer = HTTPBearer(auto_error=False)
 
+# 首次登录未改密时仅允许访问这两个接口（同时列出剥离 /api 前缀后的部署版路径）。
+_ALLOW_UNINITIALIZED = {
+    "/api/auth/change-password", "/api/auth/me",
+    "/auth/change-password", "/auth/me",
+}
+
 
 def get_current_user(
+    request: Request,
     cred: HTTPAuthorizationCredentials = Depends(_bearer),
 ) -> AdminUser:
     """解析当前登录管理员（FastAPI 依赖）。
@@ -104,15 +111,18 @@ def get_current_user(
     失败场景统一抛 401：
       - 未携带令牌 / 令牌非法 / 已过期
       - 账号被禁用（status=0）或逻辑删除（is_activate=0）
-    成功时把 JWT 中的 must_change_pwd 声明挂到用户对象上，供 require_perm 读取。
+    成功时把 DB 判定的 must_change_pwd 挂到用户对象上，供 require_perm 二次校验。
     """
     if cred is None or not cred.credentials:
         raise HTTPException(status_code=401, detail="未提供认证信息，请先登录")
 
     try:
         payload = jwt.decode(cred.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user_id = int(payload.get("sub"))
-    except (JWTError, KeyError, ValueError):
+        raw_sub = payload.get("sub")
+        if raw_sub is None:
+            raise HTTPException(status_code=401, detail="登录已过期或令牌无效")
+        user_id = int(raw_sub)
+    except (JWTError, KeyError, ValueError, TypeError, AttributeError):
         raise HTTPException(status_code=401, detail="登录已过期或令牌无效")
 
     db = SessionLocal()
@@ -124,8 +134,11 @@ def get_current_user(
     if not user or user.status != 1 or user.is_activate != 1:
         raise HTTPException(status_code=401, detail="账号已被禁用或不存在")
 
-    # 把「是否需改密」临时挂到 ORM 对象上（仅进程内使用，不落库）
-    user.must_change_pwd = bool(payload.get("must_change_pwd", False))
+    # 是否需改密一律以 DB 状态为准（不读不可信的 token 声明），并在此统一拦截，
+    # 使 upload 等只依赖 get_current_user 的写接口同样受首次改密保护。
+    user.must_change_pwd = user.last_login_at is None
+    if user.must_change_pwd and request.url.path not in _ALLOW_UNINITIALIZED:
+        raise HTTPException(status_code=403, detail="请先修改初始密码后再操作")
     return user
 
 

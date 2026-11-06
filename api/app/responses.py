@@ -18,6 +18,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from sqlalchemy.exc import IntegrityError
 from starlette.responses import StreamingResponse
 
 
@@ -118,6 +119,14 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
+async def integrity_error_handler(request: Request, exc: IntegrityError):
+    """唯一约束 / 外键冲突 -> 409，避免并发「先查后插」漏判时返回无意义 500。"""
+    return JSONResponse(
+        status_code=409,
+        content=fail(409, "数据冲突：记录已存在或关联数据不存在"),
+    )
+
+
 async def unhandled_exception_handler(request: Request, exc: Exception):
     """兜底：未捕获异常 -> 500，避免泄露堆栈，统一返回 {code:500,msg}。"""
     # 生产环境可在此记录日志；演示阶段直接返回通用错误
@@ -131,4 +140,5 @@ def register_exception_handlers(app: FastAPI) -> None:
     """在 FastAPI 实例上注册上述异常处理器。"""
     app.add_exception_handler(StarletteHTTPException, http_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(IntegrityError, integrity_error_handler)
     app.add_exception_handler(Exception, unhandled_exception_handler)

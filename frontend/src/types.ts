@@ -71,6 +71,8 @@ export interface Product {
   is_recommended: number // 1 推荐
   status: number // 1 上架 / 0 下架
   category_name: string | null // 后端联表补充分类名
+  sort?: number
+  is_activate?: number
 }
 
 /** 新闻分类（中文，便于后端直接存储） */
@@ -88,6 +90,8 @@ export interface News {
   publish_status: number
   published_at: string | null
   views: number
+  sort?: number
+  is_activate?: number
 }
 
 /** 案例分类 */
@@ -105,8 +109,8 @@ export interface CaseItem {
   status: number // 1 启用 / 0 停用
 }
 
-/** 招聘类型（整数，后端已映射 type_label 中文） */
-export type RecruitType = 1 | 2
+/** 招聘类型（整数 1/2；后端对未知值返回「未知」，故不收窄为字面量） */
+export type RecruitType = number
 
 /** 招聘职位 */
 export interface Recruitment {

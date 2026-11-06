@@ -27,7 +27,14 @@ export default function App() {
     <Routes>
       {/* 公开路由：登录 / 首次改密 */}
       <Route path="/login" element={<Login />} />
-      <Route path="/change-password" element={<ChangePassword />} />
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute allowMustChange>
+            <ChangePassword />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 受保护路由：统一套用 App Shell（顶栏 + 侧栏 + Outlet） */}
       <Route

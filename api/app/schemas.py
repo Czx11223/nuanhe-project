@@ -439,7 +439,7 @@ class MessageBase(ORMModel):
     phone: Optional[str] = Field(None, max_length=30)
     email: Optional[str] = Field(None, max_length=100)
     type: str = Field(..., min_length=1, max_length=20)  # 留言/预约/咨询/简历投递
-    content: Optional[str] = None
+    content: Optional[str] = Field(None, max_length=2000)
 
 
 class MessageCreate(MessageBase):
@@ -448,7 +448,7 @@ class MessageCreate(MessageBase):
 
 class MessageUpdate(ORMModel):
     status: Optional[int] = None          # 0 待处理 / 1 已处理 / 2 已忽略
-    reply: Optional[str] = None
+    reply: Optional[str] = Field(None, max_length=2000)
 
 
 class MessageOut(MessageBase):

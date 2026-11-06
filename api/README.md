@@ -85,7 +85,7 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 ### 鉴权与 RBAC
 - 登录 `POST /api/auth/login` → 返回 `{access_token, user, must_change_password}`。
-- 默认管理员 `admin/admin123` **首次登录** `must_change_password=true`，未改密前任何需权操作返回 403；
+- 默认管理员 `admin/<初始化日志中的随机口令>` **首次登录** `must_change_password=true`，未改密前任何需权操作返回 403；
   `POST /api/auth/change-password` 改密后写入 `last_login_at` 并重新签发无强制改密令牌。
 - 后台接口经 `require_perm(<权限键>)` 校验：权限键 `*`(全部)/`banner`/`about`/`product_category`/`product`/`news`/`case`/`recruitment`/`message`/`site_setting`/`admin`/`role`。
 - 审计字段：`created_at/updated_at` 为人员（当前登录账号），由 `utils.set_audit_on_create/update` 写入；`created_date/updated_date` 由 ORM 默认值/自动刷新。

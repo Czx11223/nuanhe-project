@@ -64,8 +64,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_credentials=not _allow_all,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # 统一响应包装中间件：把业务路由返回的“裸数据” 2xx JSON 包成 {code:0,data,msg}
@@ -74,12 +74,28 @@ app.middleware("http")(response_wrapper)
 # 统一异常处理器：401/403/404/400/422/429/500 -> {code,msg}
 register_exception_handlers(app)
 
-# 挂载静态文件目录：/static 对外服务整个 static/（含 uploads 上传目录与 seed 演示占位图）。
-# 说明：UPLOAD_DIR=static/uploads 仅保证上传目录存在；此处挂载其父目录 static/，
-#       使 /static/uploads/xxx 与 /static/seed/xxx 均可直接访问。
-_STATIC_DIR = os.path.dirname(UPLOAD_DIR) or "static"
-os.makedirs(_STATIC_DIR, exist_ok=True)
-app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
+# 安全响应头：禁止内容嗅探（伪装成图片的 HTML 不得被当页面执行）、禁 iframe 嵌套。
+@app.middleware("http")
+async def security_headers(request, call_next):
+    resp = await call_next(request)
+    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if request.url.path.startswith("/static/"):
+        resp.headers.setdefault(
+            "Content-Security-Policy",
+            "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'",
+        )
+    return resp
+
+
+# 精确挂载两个静态子目录，不再把 UPLOAD_DIR 的父目录整体公开
+# （旧实现一旦 UPLOAD_DIR 被指到项目外，会连带暴露 .env / app.db / 源码）。
+_SEED_DIR = os.path.join(os.path.dirname(UPLOAD_DIR) or "static", "seed")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(_SEED_DIR, exist_ok=True)
+app.mount("/static/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+app.mount("/static/seed", StaticFiles(directory=_SEED_DIR), name="seed")
 
 # ---------------- 注册业务路由 ----------------
 app.include_router(auth.router)
