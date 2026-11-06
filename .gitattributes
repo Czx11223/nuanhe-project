@@ -5,6 +5,23 @@
 *.cmd       text eol=crlf
 *.ps1       text eol=crlf
 
+# 前端源码与 dist/ 提交产物统一 LF。
+# core.autocrlf=true 时未声明的文本文件会在 checkout 时被转成 CRLF，
+# 导致 EdgeOne 部署产物与本地构建的字节内容不一致，也会制造无意义 diff。
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.js        text eol=lf
+*.jsx       text eol=lf
+*.mjs       text eol=lf
+*.css       text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.html      text eol=lf
+*.sql       text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.txt       text eol=lf
+
 # 二进制
 *.png       binary
 *.jpg       binary
