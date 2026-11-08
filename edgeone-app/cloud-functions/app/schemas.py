@@ -9,9 +9,16 @@
 """
 import json
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 
 # 基类：允许从 ORM 对象（含属性访问）直接构造
 class ORMModel(BaseModel):
@@ -468,3 +475,30 @@ class MessageOut(MessageBase):
 class IdResponse(ORMModel):
     """通用「操作成功返回受影响 ID」响应。"""
     id: int
+
+
+# ============================================================================
+# AI 助手
+# ============================================================================
+
+class AIChatMessage(BaseModel):
+    """客户端只能提交用户/助手历史，系统提示词由服务端控制。"""
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    role: Literal["user", "assistant"]
+    content: str = Field(..., min_length=1, max_length=4000)
+
+
+class AIChatRequest(BaseModel):
+    """最多 8 轮上下文，限制总字符数以控制 token 成本。"""
+    model_config = ConfigDict(extra="forbid")
+
+    messages: list[AIChatMessage] = Field(..., min_length=1, max_length=16)
+
+    @model_validator(mode="after")
+    def validate_conversation(self):
+        if self.messages[-1].role != "user":
+            raise ValueError("最后一条消息必须来自用户")
+        if sum(len(item.content) for item in self.messages) > 12000:
+            raise ValueError("对话内容过长，请新建会话后重试")
+        return self

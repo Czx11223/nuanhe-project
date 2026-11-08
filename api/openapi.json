@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "暖禾家具 企业官网后端 API",
-    "description": "企业家居网站后端服务（FastAPI + SQLite）。\n\n阶段：M2 已完成 —— 鉴权(JWT+RBAC) / 统一响应{code,data,msg} / 13 个业务路由（含前台公开读接口）/ 文件上传 / 富文本 XSS 清洗 / 留言 60s 限流 / 首次登录强制改密。\n\n接口契约见 Swagger 下方各 Tag；错误码表见「系统」说明与开发技术文档 6.4。",
+    "description": "企业家居网站后端服务（FastAPI + SQLite）。\n\n阶段：M2 已完成 —— 鉴权(JWT+RBAC) / 统一响应{code,data,msg} / 14 个业务路由（含前台公开读接口）/ 文件上传 / 富文本 XSS 清洗 / 留言 60s 限流 / 首次登录强制改密。\n\n接口契约见 Swagger 下方各 Tag；错误码表见「系统」说明与开发技术文档 6.4。",
     "version": "1.0.0"
   },
   "paths": {
@@ -280,6 +280,89 @@
             }
           }
         }
+      }
+    },
+    "/api/ai/chat": {
+      "post": {
+        "tags": [
+          "AI 助手"
+        ],
+        "summary": "官网 AI 客服（SSE）",
+        "operationId": "public_ai_chat_api_ai_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ai/chat": {
+      "post": {
+        "tags": [
+          "AI 助手"
+        ],
+        "summary": "后台 AI 工作助手（SSE）",
+        "operationId": "admin_ai_chat_api_admin_ai_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/roles": {
@@ -3111,6 +3194,52 @@
   },
   "components": {
     "schemas": {
+      "AIChatMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "AIChatMessage",
+        "description": "客户端只能提交用户/助手历史，系统提示词由服务端控制。"
+      },
+      "AIChatRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/AIChatMessage"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "minItems": 1,
+            "title": "Messages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "AIChatRequest",
+        "description": "最多 8 轮上下文，限制总字符数以控制 token 成本。"
+      },
       "AboutContentCreate": {
         "properties": {
           "section": {

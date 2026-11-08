@@ -69,3 +69,25 @@ CORS_ORIGINS = [
         "http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:5173,http://127.0.0.1:5174",
     ).split(",") if o.strip()
 ]
+
+# ---------- AI 助手（OpenAI 兼容接口）----------
+# 当前接入：阿里云百炼（千问 AI 平台）的 OpenAI 兼容端点 + DeepSeek 模型。
+# API Key 只允许在服务端配置；未配置时 AI 接口返回 503，不影响其他业务启动。
+# 兼容旧变量名 DEEPSEEK_*：未配置 AI_* 时自动回退，便于已有部署平滑迁移。
+AI_API_KEY = _get("AI_API_KEY", "") or _get("DEEPSEEK_API_KEY", "") or _get("DASHSCOPE_API_KEY", "")
+AI_BASE_URL = (
+    _get("AI_BASE_URL", "")
+    or _get("DEEPSEEK_BASE_URL", "")
+    or "https://dashscope.aliyuncs.com/compatible-mode/v1"
+)
+# 百炼模型广场的 DeepSeek 模型 ID（2026-10 在售：deepseek-v4-pro / deepseek-v4-flash-0731 /
+# deepseek-v4.1-flash）；具体可用 ID 以控制台「模型广场」为准。
+AI_MODEL = _get("AI_MODEL", "") or _get("DEEPSEEK_MODEL", "") or "deepseek-v4-pro"
+AI_TIMEOUT_SECONDS = float(
+    _get("AI_TIMEOUT_SECONDS", "") or _get("DEEPSEEK_TIMEOUT_SECONDS", "") or "60"
+)
+AI_MAX_TOKENS = int(_get("AI_MAX_TOKENS", "1200"))
+# 推理类模型（如 deepseek-r1）不支持 temperature，<=0 表示不下发该参数。
+AI_TEMPERATURE = float(_get("AI_TEMPERATURE", "0.7"))
+# 思考模式开关：空=按模型自动（V4 系列默认关闭思考），true/false=强制指定。
+AI_ENABLE_THINKING = _get("AI_ENABLE_THINKING", "").strip().lower()

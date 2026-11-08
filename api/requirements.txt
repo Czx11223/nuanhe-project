@@ -18,3 +18,4 @@ python-jose[cryptography]==3.3.0  # JWT 生成与校验（M2 登录鉴权使用�
 bcrypt==5.0.0             # 密码哈希（bcrypt），禁止明文存储
 python-multipart==0.0.9   # 支持表单/文件上传（M2 上传接口使用）
 bleach==6.1.0             # 富文本 HTML 白名单清洗，防 XSS（M2 入库前使用）
+httpx==0.27.2             # DeepSeek 异步流式 API 客户端

@@ -17,7 +17,7 @@ _DATA = pathlib.Path("/tmp/nuanhe")
 (_DATA / "static" / "seed").mkdir(parents=True, exist_ok=True)
 
 """FastAPI 应用入口
-功能：创建 app 实例、配置 CORS 与静态文件、注册 13 个业务路由、统一异常处理与响应中间件、
+功能：创建 app 实例、配置 CORS 与静态文件、注册 14 个业务路由、统一异常处理与响应中间件、
       启动钩子（自动建库+种子）、提供健康检查。
 说明：M2 阶段完成鉴权/RBAC/统一响应/各模块 CRUD/上传/限流/Swagger 注解，路由在此统一挂载。
 """
@@ -33,10 +33,11 @@ from app import models  # 关键：导入模型，确保 Base.metadata 注册
 from app.init_db import init_and_seed  # 建库 + 种子逻辑
 from app.responses import register_exception_handlers, response_wrapper
 
-# 13 个业务路由（含公开读接口与后台管理接口）
+# 14 个业务路由（含公开读接口、后台管理接口与 AI 助手）
 from app.routers import (
     about,
     admins,
+    ai,
     auth,
     banners,
     cases,
@@ -67,7 +68,7 @@ app = FastAPI(
     version="1.0.0",
     description=(
         "企业家居网站后端服务（FastAPI + SQLite）。\n\n"
-        "阶段：M2 已完成 —— 鉴权(JWT+RBAC) / 统一响应{code,data,msg} / 13 个业务路由"
+        "阶段：M2 已完成 —— 鉴权(JWT+RBAC) / 统一响应{code,data,msg} / 14 个业务路由"
         "（含前台公开读接口）/ 文件上传 / 富文本 XSS 清洗 / 留言 60s 限流 / 首次登录强制改密。\n\n"
         "接口契约见 Swagger 下方各 Tag；错误码表见「系统」说明与开发技术文档 6.4。"
     ),
@@ -118,6 +119,7 @@ app.mount("/static/seed", StaticFiles(directory=_SEED_DIR), name="seed")
 # ---------------- 注册业务路由 ----------------
 app.include_router(auth.router)
 app.include_router(admins.router)
+app.include_router(ai.router)
 app.include_router(roles.router)
 app.include_router(banners.router)
 app.include_router(site_settings.router)
