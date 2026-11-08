@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import Header from './Header'
 import Footer from './Footer'
+
+const AIAssistant = lazy(() => import('./AIAssistant'))
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
@@ -8,6 +10,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <Suspense fallback={null}><AIAssistant /></Suspense>
     </div>
   )
 }

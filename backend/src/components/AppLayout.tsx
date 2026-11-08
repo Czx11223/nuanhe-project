@@ -4,12 +4,14 @@
 //   侧边栏 240px（按权限动态渲染的分组菜单；桌面可折叠为 64px 图标态）
 //   主内容区（路由出口 Outlet）
 // 响应式（引 UIUX 5）：<768px 侧栏隐藏，改用左侧 Drawer 抽屉导航。
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Drawer, Menu, Button, Popconfirm, type MenuProps } from 'antd';
-import { MenuOutlined, LogoutOutlined } from '@ant-design/icons';
+import { MenuOutlined, LogoutOutlined, RobotOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/auth';
 import { menuGroups } from './menuConfig';
+
+const AIAssistant = lazy(() => import('./AIAssistant'));
 
 export default function AppLayout() {
   const location = useLocation();
@@ -20,6 +22,7 @@ export default function AppLayout() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [collapsed, setCollapsed] = useState(false); // 桌面侧栏折叠
   const [drawerOpen, setDrawerOpen] = useState(false); // 移动端抽屉
+  const [aiOpen, setAiOpen] = useState(false); // AI 工作助手
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -115,6 +118,15 @@ export default function AppLayout() {
           />
           <span style={{ fontWeight: 600, marginLeft: 8 }}>暖禾 · 后台</span>
           <div style={{ flex: 1 }} />
+          <Button
+            type="text"
+            icon={<RobotOutlined />}
+            onClick={() => setAiOpen(true)}
+            style={{ color: '#007AFF', marginRight: 8 }}
+            aria-label="打开 AI 工作助手"
+          >
+            {!isMobile && 'AI 助手'}
+          </Button>
           <span style={{ color: '#6E6E73', marginRight: 12 }}>
             {user?.real_name || user?.username}
           </span>
@@ -142,6 +154,9 @@ export default function AppLayout() {
       >
         {menuEl}
       </Drawer>
+      <Suspense fallback={null}>
+        <AIAssistant open={aiOpen} onClose={() => setAiOpen(false)} />
+      </Suspense>
     </div>
   );
 }
