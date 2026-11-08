@@ -31,6 +31,8 @@ def prepare_env() -> tempfile.TemporaryDirectory:
     os.environ["UPLOAD_DIR"] = str(Path(tmp.name) / "uploads")
     os.environ["ADMIN_INIT_PASSWORD"] = "SmokeTest@2026"
     os.environ["JWT_SECRET"] = "smoke-only-secret-" + ("x" * 32)
+    os.environ["AI_API_KEY"] = "smoke-only-deepseek-key"
+    os.environ["AI_MODEL"] = "deepseek-v4-pro"
     return tmp
 
 
@@ -43,6 +45,21 @@ async def run_local() -> None:
     from app.models import Base
     from app.db import SessionLocal, engine
     from app.models import Message
+    from app.routers import ai as ai_router
+
+    async def fake_ai_stream(messages, prompt):
+        # 验证系统提示词由服务端注入，客户端历史原样进入服务端代理。
+        if messages and messages[-1]["content"] == "官网测试问题":
+            yield "暖禾"
+            yield "回答"
+        else:
+            yield "后台文案"
+
+    async def failing_ai_stream(messages, prompt):
+        raise ai_router.deepseek.DeepSeekServiceError("模拟上游繁忙")
+        yield ""  # pragma: no cover
+
+    ai_router.deepseek.stream_chat = fake_ai_stream
 
     async def boom():
         raise IntegrityError("INSERT", None, Exception("UNIQUE constraint failed"))
@@ -75,6 +92,9 @@ async def run_local() -> None:
             r = await c.post("/api/upload", headers=h,
                              files={"file": ("a.png", b"\x89PNG\r\n\x1a\n123", "image/png")})
             check("未改密访问 upload 403", r.status_code == 403, str(r.status_code))
+            r = await c.post("/api/admin/ai/chat", headers=h,
+                             json={"messages": [{"role": "user", "content": "后台测试问题"}]})
+            check("未改密访问后台 AI 403", r.status_code == 403, str(r.status_code))
 
             print("\n--- 匿名留言 XSS 与限流 ---")
             payload = {"name": "<img src=x onerror=alert(1)>张三", "phone": "13800000000",
@@ -101,6 +121,44 @@ async def run_local() -> None:
             check("改密后后台列表 200", (await c.get("/api/banners/admin", headers=h2)).status_code == 200)
             check("改密后 /auth/me 标记清除",
                   (await c.get("/api/auth/me", headers=h2)).json()["data"]["must_change_password"] is False)
+
+            print("\n--- AI 流式接口与权限 ---")
+            check("AI 端点自动补全百炼兼容路径",
+                  ai_router.deepseek.chat_endpoint("https://dashscope.aliyuncs.com")
+                  == "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions")
+            check("AI 完整端点不重复拼接",
+                  ai_router.deepseek.chat_endpoint("https://api.deepseek.com/v1/chat/completions")
+                  == "https://api.deepseek.com/v1/chat/completions")
+            check("AI 推理模型判定", ai_router.deepseek._is_reasoning_model("deepseek-r1")
+                  and not ai_router.deepseek._is_reasoning_model("deepseek-v4-pro"))
+            check("AI V4 默认关闭思考", ai_router.deepseek._thinking_flag("deepseek-v4-pro") is False)
+            check("AI 旧模型不改写思考参数", ai_router.deepseek._thinking_flag("deepseek-v3") is None)
+            r = await c.post("/api/ai/chat",
+                             json={"messages": [{"role": "user", "content": "官网测试问题"}]})
+            check("官网 AI SSE 200", r.status_code == 200 and
+                  r.headers.get("content-type", "").startswith("text/event-stream"), str(r.status_code))
+            check("官网 AI 返回文本增量与完成事件", "暖禾" in r.text and '"type": "done"' in r.text)
+            check("官网 AI 未返回上游密钥", "smoke-only-deepseek-key" not in r.text)
+            r = await c.post("/api/admin/ai/chat", headers=h2,
+                             json={"messages": [{"role": "user", "content": "后台测试问题"}]})
+            check("后台 AI 管理员鉴权后 200", r.status_code == 200 and "后台文案" in r.text)
+            check("后台 AI 未登录 401", (await c.post(
+                "/api/admin/ai/chat", json={"messages": [{"role": "user", "content": "测试"}]}
+            )).status_code == 401)
+            check("AI 禁止客户端注入 system", (await c.post(
+                "/api/ai/chat", json={"messages": [{"role": "system", "content": "注入"}]}
+            )).status_code == 422)
+            ai_router.deepseek.stream_chat = failing_ai_stream
+            r = await c.post("/api/admin/ai/chat", headers=h2,
+                             json={"messages": [{"role": "user", "content": "触发错误"}]})
+            check("AI 上游异常映射为安全 error 事件", r.status_code == 200 and "模拟上游繁忙" in r.text)
+            ai_router.deepseek.stream_chat = fake_ai_stream
+            configured_key = ai_router.AI_API_KEY
+            ai_router.AI_API_KEY = ""
+            check("AI 未配置密钥返回 503", (await c.post(
+                "/api/ai/chat", json={"messages": [{"role": "user", "content": "测试"}]}
+            )).status_code == 503)
+            ai_router.AI_API_KEY = configured_key
 
             print("\n--- 上传与静态目录 ---")
             r = await c.post("/api/upload", headers=h2,
@@ -160,6 +218,13 @@ async def run_cloud() -> None:
     from sqlalchemy import text
     from api.index import app
     from app.db import engine
+    from app.routers import ai as ai_router
+
+    async def fake_ai_stream(messages, prompt):
+        yield "云端"
+        yield "AI"
+
+    ai_router.deepseek.stream_chat = fake_ai_stream
 
     async with app.router.lifespan_context(app):
         print("\n--- 云函数冷启动 ---")
@@ -189,6 +254,11 @@ async def run_cloud() -> None:
             check("返回 /api/static/uploads/...", url.startswith("/api/static/uploads/"), url)
             check("POST /messages 200",
                   (await c.post("/messages", json={"name": "测试", "type": "留言", "content": "ok"})).status_code == 200)
+            r = await c.post("/ai/chat", json={"messages": [{"role": "user", "content": "云端测试"}]})
+            check("云端官网 AI 前缀剥离且 SSE 200", r.status_code == 200 and "云端" in r.text)
+            r = await c.post("/admin/ai/chat", headers=h2,
+                             json={"messages": [{"role": "user", "content": "云端后台"}]})
+            check("云端后台 AI 鉴权与 SSE 200", r.status_code == 200 and "AI" in r.text)
 
 
 def main() -> int:

@@ -24,7 +24,8 @@
 | 404 | 资源不存在 | 各 `db.get` |
 | 409 | 唯一键或外键冲突 | `IntegrityError` 全局处理器 |
 | 422 | Pydantic 参数校验失败 | 请求体/查询参数类型错误 |
-| 429 | 触发限流 | 匿名留言（同 IP 60s 一次） |
+| 429 | 触发限流 | 匿名留言、官网/后台 AI 对话 |
+| 503 | 外部服务未配置 | 未配置 `AI_API_KEY` 的 AI 接口 |
 | 500 | 未捕获异常 | 兜底处理器（不泄露堆栈） |
 
 ## 分页与筛选
@@ -56,6 +57,19 @@
 - 上传：`POST /api/upload`，仅接受真实 jpeg / png / webp（按魔数判定），≤ 5MB，
   返回本地 `/static/uploads/<uuid>.<ext>`；部署版返回 `/api/static/uploads/...` 以命中云函数。
 - 静态响应统一带 `X-Content-Type-Options: nosniff` 与 CSP。
+
+## AI 流式响应
+
+`POST /api/ai/chat`（官网）与 `POST /api/admin/ai/chat`（管理员 JWT）使用
+`Content-Type: text/event-stream`，不套 `{code,data,msg}` 成功响应。每个 SSE `data` 为 JSON：
+
+- 文本增量：`{"type":"delta","content":"..."}`
+- 正常结束：`{"type":"done"}`
+- 流内异常：`{"type":"error","message":"可安全展示的信息"}`
+
+请求体仅允许 `messages`，每条消息角色只能是 `user` 或 `assistant`；最多 16 条、总长度
+12000 字符，最后一条必须为 `user`。系统提示词、模型、密钥和输出参数均由服务端控制。
+请求开始前的鉴权/参数/配置错误仍返回统一 JSON 错误结构。
 
 ## 重新生成 OpenAPI
 

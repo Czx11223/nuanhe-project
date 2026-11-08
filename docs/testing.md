@@ -25,7 +25,8 @@ python tests/smoke.py
 | 静态目录 | 上传文件可访问且带 `nosniff`；父目录中的 `app.db` 不可通过 `/static` 访问 |
 | 数据层 | `PRAGMA foreign_keys=ON`；外键拦截悬空 `role_id`；`IntegrityError` 映射 409；7 个索引随 `create_all` 建立 |
 | 配置 | `JWT_SECRET` 缺失或为示例值时启动直接失败；`ADMIN_INIT_PASSWORD` 生效 |
-| 部署副本 | 云函数冷启动从内嵌 `init.sql` 建库；剥离 `/api` 后的路由可访问；上传返回 `/api/static/uploads/...` |
+| AI 助手 | mock DeepSeek，不发起付费请求；SSE 增量/完成/错误事件；后台 401/403；禁止 system 注入；密钥不泄露；未配置返回 503 |
+| 部署副本 | 云函数冷启动从内嵌 `init.sql` 建库；剥离 `/api` 后的路由可访问；上传返回 `/api/static/uploads/...`；双端 AI 前缀验证 |
 
 ## 前端与构建验证
 
@@ -39,7 +40,7 @@ node edgeone-app/build.mjs
 ```
 
 `build.py --frontends` 会整体重建 `dist/`。可复跑一次并比对 `find edgeone-app/dist -type f | sort`
-的输出，清单应完全一致（已验证 88 → 88 个文件），以此确认没有历史 hash 包残留。
+的输出，清单应完全一致（已验证 92 → 92 个文件），以此确认没有历史 hash 包残留。
 
 ## 最近一次全量验证结论
 
@@ -49,7 +50,7 @@ node edgeone-app/build.mjs
 | `frontend` / `backend` `tsc --noEmit` | 均通过 |
 | `vite build` 两端 | 均通过；后台拆出 20 个 chunk，官网 13 个 |
 | `build.py --frontends` / `build.mjs` | 通过；二次构建产物清单一致 |
-| `tests/smoke.py` | local 29 通过 / 0 失败；cloud 12 通过 / 0 失败 |
+| `tests/smoke.py` | local 43 通过 / 0 失败；cloud 14 通过 / 0 失败（含 AI mock、端点补全与思考模式用例） |
 
 ## CI 建议
 

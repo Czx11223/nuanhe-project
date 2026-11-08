@@ -22,11 +22,21 @@ Python 云函数，因此云函数内部注册的是 `/health`、`/products`、`
 | `ADMIN_INIT_PASSWORD` | 演示站建议必填 | 不填则每次冷启动随机生成，口令只出现在函数日志，实际无法登录 |
 | `CORS_ORIGINS` | 可选 | 同源部署留空；确需跨域时填逗号分隔的域名白名单 |
 | `JWT_EXPIRE_MINUTES` | 可选 | 默认 120 |
+| `AI_API_KEY` | AI 功能必填 | 阿里云百炼（千问 AI 平台）个人 API Key；留空时 AI 返回 503，不影响其他接口 |
+| `AI_BASE_URL` | 可选 | 默认 `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| `AI_MODEL` | 可选 | 默认 `deepseek-v4-pro`；以百炼模型广场的模型 ID 为准 |
+| `AI_TIMEOUT_SECONDS` | 可选 | 默认 60；平台函数超时应不小于该值 |
+| `AI_MAX_TOKENS` | 可选 | 默认 1200 |
+| `AI_TEMPERATURE` | 可选 | 默认 0.7；`deepseek-r1` 等推理模型自动忽略 |
+| `AI_ENABLE_THINKING` | 可选 | 思考模式；留空按模型自动（V4 默认关闭），可设 `true`/`false` |
 
 生成密钥：`python -c "import secrets; print(secrets.token_urlsafe(48))"`
 
 > **重要**：本仓库的 `api/.env`（含本地密钥）被 `.gitignore` 排除，不会随代码上传；
 > 平台环境变量必须单独配置。轮换 `JWT_SECRET` 会使所有已签发令牌立即失效。
+> DeepSeek 模型经阿里云百炼（千问 AI 平台）的 OpenAI 兼容端点调用，密钥同样只在平台环境变量中配置，
+> 并需确认云函数具备访问 `dashscope.aliyuncs.com` 的出站网络与 SSE 流式响应能力。
+> 常见失败：模型 ID 拼错（400/404，返回「AI 模型配置有误」）、用了应用 Key 而非个人 Key（403）、额度或限流（429）。
 
 ## 3. 本地构建
 
@@ -85,6 +95,8 @@ UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ \
 | `POST /api/auth/login` | 用 `ADMIN_INIT_PASSWORD` 可登录，返回 `must_change_password=true` |
 | 上传一张图片 | 返回 `/api/static/uploads/<uuid>.png`，GET 该 URL 返回 `image/png` 而非 HTML |
 | `GET /api/static/uploads/` 下的伪装 HTML | 被 400 拒绝上传，静态响应带 `nosniff` |
+| 官网 AI 提问 | SSE 逐段返回；未配置密钥时明确提示 503 |
+| 后台 AI 提问 | 有效管理员 JWT 可流式提问；未登录 401、首次未改密 403 |
 
 ## 6. 已知限制（演示方案，必须告知使用方）
 
@@ -96,6 +108,8 @@ UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ \
 4. **不适合生产写入**：如需真实持久化，须替换存储层为托管数据库 + 对象存储，并重新评估
    并发与鉴权方案（HttpOnly Cookie / token 吊销）。
 5. 密钥、初始口令均不入库；仓库里的 `api/app.db*` 已从版本控制移除，本地文件仅作开发用。
+6. **AI 配额为实例级**：官网同 IP 每分钟 5 次、后台同管理员每分钟 20 次；多实例不共享计数，
+   正式上线仍应在 DeepSeek 控制台设置费用上限。对话不持久化，刷新页面后清空。
 
 ## 7. 回滚与重置
 

@@ -1,6 +1,7 @@
 # 暖禾家具企业官网
 
 家具企业官网 + 后台管理系统，单域名同源部署：官网 `/`、后台 `/admin`、API `/api`。
+官网与后台均内置 DeepSeek AI 助手：官网提供家居咨询，后台提供操作指导与内容创作；回答通过 SSE 流式展示。
 
 | 层 | 技术栈 | 权威配置 |
 | --- | --- | --- |
@@ -53,11 +54,31 @@ cd backend && npm ci && npm run dev
 | `UPLOAD_DIR` | `api/` | 上传目录，默认 `api/static/uploads` |
 | `CORS_ORIGINS` | `api/`, EdgeOne 云函数 | 逗号分隔的域名白名单；同源部署可留空 |
 | `JWT_EXPIRE_MINUTES` | `api/`, EdgeOne 云函数 | 默认 120 |
+| `AI_API_KEY` | `api/`, EdgeOne 云函数 | AI 功能必填；仅服务端保存，留空时 AI 返回 503，不影响其他业务 |
+| `AI_BASE_URL` | `api/`, EdgeOne 云函数 | 默认 `https://dashscope.aliyuncs.com/compatible-mode/v1`（阿里云百炼兼容模式） |
+| `AI_MODEL` | `api/`, EdgeOne 云函数 | 默认 `deepseek-v4-pro`；可换 `deepseek-v4-flash-0731` 等百炼模型 ID |
+| `AI_TIMEOUT_SECONDS` | `api/`, EdgeOne 云函数 | 上游超时秒数，默认 60 |
+| `AI_MAX_TOKENS` | `api/`, EdgeOne 云函数 | 单次回答上限，默认 1200 |
+| `AI_TEMPERATURE` | `api/`, EdgeOne 云函数 | 采样温度，默认 0.7；推理模型自动忽略 |
+| `AI_ENABLE_THINKING` | `api/`, EdgeOne 云函数 | 思考模式；留空按模型自动（V4 默认关闭），可设 true/false |
 | `VITE_API_BASE` | 两个前端 | 本地与同源部署留空 |
 | `VITE_BASE_PATH` | `backend/` | 后台子路径，EdgeOne 构建注入 `/admin` |
 | `VITE_STATIC_BASE` | 两个前端 | 构建期注入，保留给分离部署场景 |
 
 生成密钥：`python -c "import secrets; print(secrets.token_urlsafe(48))"`
+
+使用 AI 前，在 `api/.env` 配置 `AI_API_KEY`（阿里云百炼控制台「API-KEY 管理」创建的个人 Key），
+`AI_BASE_URL` 保持默认的百炼兼容模式地址，`AI_MODEL` 按模型广场填写（默认 `deepseek-v4-pro`）；
+部署时在 EdgeOne 控制台单独配置同名变量。旧的 `DEEPSEEK_*` 变量仍兼容，但建议统一用 `AI_*`。
+**不得将模型密钥设置为 `VITE_` 变量或写入前端代码。**聊天仅保留在当前页面状态中，刷新后清空。
+
+配置后可先自检上游连通性：
+
+```bash
+python api/scripts/ai_check.py                      # 使用当前 AI_MODEL
+python api/scripts/ai_check.py --model deepseek-v4-flash-0731  # 临时换模型验证
+python api/scripts/ai_check.py --list                # 列出该 Key 可访问的模型
+```
 
 ## 初始管理员与改密
 
