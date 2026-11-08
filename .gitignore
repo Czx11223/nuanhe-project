@@ -48,5 +48,7 @@ Thumbs.db
 # ===== 数据库 / 构建缓存 / 平台产物（含凭据与资源 ID，绝不入库） =====
 *.db
 *.db.*
+# SQLite WAL/SHM 运行时文件（-shm / -wal）
+*.db-*
 *.tsbuildinfo
 .edgeone/
